@@ -4,6 +4,7 @@ CFLAGS = -Wall -pedantic -Werror
 
 OBJ = 	helper.o\
       	init.o\
+        sor.o\
       	boundary_val.o\
       	uvp.o\
       	main.o\
