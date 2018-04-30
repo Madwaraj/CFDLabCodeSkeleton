@@ -34,16 +34,16 @@ double **G
             du2y2= (U[i][j+1]-2*U[i][j]+U[i][j-1])/(dy*dy);
             a=(U[i][j]+U[i+1][j])/2;
             b=(U[i-1][j]+U[i][j])/2;
-            du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]-U[i+1][j])/2)-fabs(b)*((U[i-1][j]-U[i][j])/2)))/dx;
-            duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]-V[i+1][j-1])*(U[i][j-1]-U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))/(4*dy);
+            du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]+U[i+1][j])/2)-fabs(b)*((U[i-1][j]+U[i][j])/2)))/dx;
+            duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])))/(4*dy);
             F[i][j]=U[i][j]+dt*((du2x2+du2y2)*(1/Re)-du2dx-duvy+GX);
             
             dv2y2= (V[i][j+1]-2*V[i][j]+V[i][j-1])/(dy*dy);
             dv2x2= (V[i+1][j]-2*V[i][j]+V[i-1][j])/(dx*dx);
             c=(V[i][j]+V[i][j+1])/2;
             d=(V[i][j-1]+V[i][j])/2;
-            dv2dy=(c*c-d*d+ alpha*(fabs(c)*((V[i][j]-V[i][j+1])/2)-fabs(d)*((V[i][j-1]-V[i][j])/2)))/dy;
-            duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]-U[i-1][j+1])*(V[i-1][j]-V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j])))/(4*dy);
+            dv2dy=(c*c-d*d+ alpha*(fabs(c)*((V[i][j]+V[i][j+1])/2)-fabs(d)*((V[i][j-1]+V[i][j])/2)))/dy;
+            duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])))/(4*dy);
             G[i][j]=V[i][j]+dt*((dv2x2+dv2y2)*(1/Re)-dv2dy-duvx+GY);
         }
     }
