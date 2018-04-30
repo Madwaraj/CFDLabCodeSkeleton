@@ -72,16 +72,14 @@ double **RS
 
 void calculate_dt(
 double Re,
+double tau,
 double *dt,
 double dx,
 double dy,
 int imax,
 int jmax,
 double **U,
-double **V,
-double **F,
-double **G,
-double **P
+double **V
 ){
     double dt1,dt2,dt3;
     double U1=fabs(U[0][0]);
@@ -103,17 +101,17 @@ double **P
     dt2 = dx/fabs(U1);
     dt3 = dy/fabs(V1);
     
-    dt = dt1;
+    *dt = dt1;
     if (dt2 < dt1){
-        dt =dt2;
+        *dt =dt2;
         if (dt3 < dt2){
-            dt = dt3;
+            *dt = dt3;
         }
     }
     else if (dt3 < dt1){
-        dt = dt3;
+        *dt = dt3;
     }
-    dt = dt*0.5;
+    *dt = *dt*tau;
     return;
 }
 
