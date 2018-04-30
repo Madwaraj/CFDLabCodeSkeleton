@@ -4,13 +4,21 @@
 
 void init_uvp (double UI, double VI, double PI, int imax, int jmax, double **U, double **V, double **P)
 {
-	for(int i=1; i<=imax; i++){
+	for(int i=1; i<imax; i++){
 		for(int j=1; j<=jmax; j++){
 			U[i][j]=UI;
-			V[i][j]=VI;
-			P[i][j]=PI;
 			}
 		}
+    for (int i = 1; i <= imax; i++){
+        for (int j = 1; j < jmax; j++){
+            V[i][j] = VI;
+        }
+    }
+    for (int i = 1; i <= imax; i++){
+        for (int j = 1; j <= jmax; j++){
+            P[i][j] = PI;
+        }
+    }
 }
 
 
