@@ -20,11 +20,11 @@ double **F,
 double **G
 ){
     double a, b,c,d,du2x2,du2y2,du2dx,duvy,dv2y2,dv2x2,dv2dy,duvx;
-    for (int j=1; j<jmax;j++){
+    for (int j=1; j<=jmax;j++){
         F[0][j]=U[0][j];     //Boundary conditions
         F[imax][j]=U[imax][j];
     }
-    for (int i=1; i<imax; i++){
+    for (int i=1; i<=imax; i++){
         G[i][0]=V[i][0];    // Boundary conditions
         G[i][jmax]=V[i][jmax];
     }
@@ -62,8 +62,8 @@ double **G,
 double **RS
 ){
     int i,j;
-    for (i=1;i<imax;i++){
-        for (j=1;j<jmax;j++){
+    for (i=1;i<=imax;i++){
+        for (j=1;j<=jmax;j++){
            RS[i][j] = ((F[i][j] - F[i-1][j])/dx + (G[i][j] - G[i][j-1])/dy)/dt;
         }
     }
@@ -126,8 +126,8 @@ double **V,
 double **F,
 double **G,
 double **P){
-    for (int i=1;i<imax;i++){
-        for (int j=1;j<jmax;j++){
+    for (int i=1;i<=imax;i++){
+        for (int j=1;j<=jmax;j++){
             U[i][j] = F[i][j] - dt*(P[i+1][j] - P[i][j])/dx;
             V[i][j] = G[i][j] - dt*(P[i][j+1] - P[i][j])/dy;
         }
