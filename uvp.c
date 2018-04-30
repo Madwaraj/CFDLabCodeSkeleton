@@ -70,7 +70,8 @@ double **RS
 }
 
 void calculate_dt(
-double dt,
+double Re,
+double *dt,
 double dx,
 double dy,
 int imax,
@@ -98,8 +99,8 @@ double **P
         }
     }
     dt1 = 0.5*Re/(1/(dx*dx) + 1/(dy*dy));
-    dt2 = dx/abs(umax);
-    dt3 = dy/abs(vmax);
+    dt2 = dx/abs(U1);
+    dt3 = dy/abs(V1);
     
     dt = dt1;
     if (dt2 < dt1){
@@ -112,7 +113,7 @@ double **P
         dt = dt3;
     }
     dt = dt*0.5;
-    return dt;
+    return;
 }
 
 void calculate_uv(
@@ -126,8 +127,8 @@ double **V,
 double **F,
 double **G,
 double **P){
-    for (i=1;i<imax;i++){
-        for (j=1;j<jmax;j++){
+    for (int i=1;i<imax;i++){
+        for (int j=1;j<jmax;j++){
             U[i][j] = F[i][j] - dt*(P[i+1][j] - P[i][j])/dx;
             V[i][j] = G[i][j] - dt*(P[i][j+1] - P[i][j])/dy;
         }

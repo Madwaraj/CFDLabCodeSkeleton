@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 void boundaryvalues(int imax,int jmax,double** U,double** V){
-    for (j=1;j<imax;j++){
+    for (int j=1;j<imax;j++){
         u[0][j] =0;
         u[imax][j]=0;
         v[0][j] = -v[1][j];
@@ -12,7 +12,7 @@ void boundaryvalues(int imax,int jmax,double** U,double** V){
         F[0][j] = u[0][j];
         F[imax][j] = umax[i][j];
     }
-    for (i=1;i<imax;i++){
+    for (int i=1;i<imax;i++){
         v[i][0]=0;
         v[i][jmax]=0;
         u[i][0]=-u[i][1];
