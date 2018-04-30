@@ -89,12 +89,8 @@ double **V
         for(int d= 0 ; d <=jmax ; d++ ){
             if ( fabs(U[c][d]) > fabs(U1) )
                 U1= U[c][d];
-        }
-    }
-    for(int c=0 ; c<=imax ; c++ ){
-        for(int d=0 ; d<=jmax ; d++ ) {
-            if ( fabs(U[c][d]) > fabs(U1) )
-                V1= V[c][d];
+            if ( fabs(V[c][d]) > fabs(V1) )
+                V1 = V[c][d];
         }
     }
     dt1 = 0.5*Re/(1/(dx*dx) + 1/(dy*dy));
