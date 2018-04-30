@@ -57,7 +57,8 @@ int main(int argn, char** args){
 
 	// Time Stepping Data	
 
-	double t = 0
+	double t = 0;
+	double tau;
 	double t_end;             /* end time */
 	double dt;                /* time step */
 	double dt_value;          /* time for output */
@@ -99,8 +100,8 @@ int main(int argn, char** args){
 	//Initialize U, V and P	
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
 									
-	int n = 0;
-	double t = 0;
+	n = 0;
+	t = 0;
 	int n1 = 0;
 
 	while (t < t_end) 
@@ -118,7 +119,7 @@ int main(int argn, char** args){
 													
 		int it = 0;
 
-		double res = 0.0; // Residual for the SOR 
+		double res = 1.0; // Residual for the SOR 
 
 		while(it < itermax && res > eps)
 		{
