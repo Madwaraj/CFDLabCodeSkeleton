@@ -13,7 +13,7 @@ void boundaryvalues(int imax,int jmax,double** U,double** V){
         V[i][0]=0;
         V[i][jmax]=0;
         U[i][0]=-U[i][1];
-        U[i][jmax+1] = -U[i][jmax];
+        U[i][jmax+1] = 2-U[i][jmax];
        
     }
     
