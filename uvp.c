@@ -122,9 +122,13 @@ double **V,
 double **F,
 double **G,
 double **P){
-    for (int i=1;i<=imax;i++){
+    for (int i=1;i<imax;i++){
         for (int j=1;j<=jmax;j++){
             U[i][j] = F[i][j] - dt*(P[i+1][j] - P[i][j])/dx;
+        }
+    }
+    for (int i=1;i<=imax;i++){
+        for (int j=1;j<jmax;j++){
             V[i][j] = G[i][j] - dt*(P[i][j+1] - P[i][j])/dy;
         }
     }
