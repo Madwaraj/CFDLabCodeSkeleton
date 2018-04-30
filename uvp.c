@@ -1,6 +1,7 @@
 #include "uvp.h"
 #include "init.h"
 
+#include <math.h>
 #include <stdio.h>
 
 void calculate_fg(
@@ -62,7 +63,7 @@ double **RS
 ){
     int i,j;
     for (i=1;i<imax;i++){
-        for (j=1;j,jmax;j++){
+        for (j=1;j<jmax;j++){
            RS[i][j] = ((F[i][j] - F[i-1][j])/dx + (G[i][j] - G[i][j-1])/dy)/dt;
         }
     }
@@ -99,8 +100,8 @@ double **P
         }
     }
     dt1 = 0.5*Re/(1/(dx*dx) + 1/(dy*dy));
-    dt2 = dx/abs(U1);
-    dt3 = dy/abs(V1);
+    dt2 = dx/fabs(U1);
+    dt3 = dy/fabs(V1);
     
     dt = dt1;
     if (dt2 < dt1){
