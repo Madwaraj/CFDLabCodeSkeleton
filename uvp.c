@@ -29,7 +29,7 @@ double **G
         G[i][jmax]=V[i][jmax];
     }
     for (int i=1;i<imax;i++){
-        for (int j=1;j<imax;j++){
+        for (int j=1;j<=jmax;j++){
             du2x2= (U[i+1][j]-2*U[i][j]+U[i-1][j])/(dx*dx);
             du2y2= (U[i][j+1]-2*U[i][j]+U[i][j-1])/(dy*dy);
             a=(U[i][j]+U[i+1][j])/2;
@@ -37,7 +37,10 @@ double **G
             du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]+U[i+1][j])/2)-fabs(b)*((U[i-1][j]+U[i][j])/2)))/dx;
             duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])))/(4*dy);
             F[i][j]=U[i][j]+dt*((du2x2+du2y2)*(1/Re)-du2dx-duvy+GX);
-            
+        }
+    }
+    for (int i=1;i<=imax;i++){
+        for (int j=1;j<jmax;j++){
             dv2y2= (V[i][j+1]-2*V[i][j]+V[i][j-1])/(dy*dy);
             dv2x2= (V[i+1][j]-2*V[i][j]+V[i-1][j])/(dx*dx);
             c=(V[i][j]+V[i][j+1])/2;
