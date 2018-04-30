@@ -104,14 +104,16 @@ int main(int argn, char** args){
 	t = 0;
 	int n1 = 0;
 
+	boundaryvalues(imax, jmax, U, V); 
+
 	while (t < t_end) 
 	{
 
 	    	calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V); // Adaptive time stepping
 
-	    	printf("Tims Step is %f \n",dt);		
+	    	printf("Time Step is %f \n", t);		
 					
-	    	boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
+	    	//boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
 														
 	    	calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G); // Computing Fn and Gn
 													
