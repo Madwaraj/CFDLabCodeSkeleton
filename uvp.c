@@ -108,6 +108,11 @@ double **V
         }
     }
 
+    else if (dt3 < dt1){
+            *dt = dt3;
+        }
+        *dt = *dt*tau;
+
     *dt = (*dt)*tau;
     return;
 }
