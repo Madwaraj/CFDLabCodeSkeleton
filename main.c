@@ -57,8 +57,8 @@ int main(int argn, char** args){
 
 	// Time Stepping Data	
 
-    double t = 0;
-    double tau;
+    	double t = 0;
+    	double tau;
 	double t_end;             /* end time */
 	double dt;                /* time step */
 	double dt_value;          /* time for output */
@@ -100,8 +100,6 @@ int main(int argn, char** args){
 	//Initialize U, V and P	
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
 									
-	//int n = 0;
-	//double t = 0;
 	int n1 = 0;
 
 	while (t < t_end) 
@@ -109,7 +107,7 @@ int main(int argn, char** args){
 
 	    	calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V); // Adaptive time stepping
 
-	    	printf("Time Step is %f \n",dt);
+	    	printf("Time Step is %f \n", t);
 					
 	    	boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
 														
@@ -123,11 +121,11 @@ int main(int argn, char** args){
 
 		while(it < itermax && res > eps)
 		{
-			sor(omg, dx, dy, imax, jmax, P, RS, &res);    	
+			sor(omg, dx, dy, imax, jmax, P, RS, &res); // Successive over-realaxation to solve the Pressure Eqn    	
 			it++;
 		}
 
-		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computinig U, V for the next time-step
+		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computing U, V for the next time-step
 
 		if (t >= n1*dt_value)
   		{
