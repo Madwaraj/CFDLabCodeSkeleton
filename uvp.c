@@ -21,11 +21,11 @@ double **G
 ){
     double a, b,c,d,du2x2,du2y2,du2dx,duvy,dv2y2,dv2x2,dv2dy,duvx;
     for (int j=1; j<=jmax;j++){
-        F[0][j]=U[0][j];     //Boundary conditions
+        F[0][j]=U[0][j];
         F[imax][j]=U[imax][j];
     }
     for (int i=1; i<=imax; i++){
-        G[i][0]=V[i][0];    // Boundary conditions
+        G[i][0]=V[i][0];
         G[i][jmax]=V[i][jmax];
     }
     for (int i=1;i<imax;i++){
@@ -88,8 +88,8 @@ double **V
     double U1=fabs(U[0][0]);
     double V1=fabs(V[0][0]);
     
-    for(int c=1 ; c <=imax ; c++ ){
-        for(int d= 1 ; d <=jmax ; d++ ){
+    for(int c=0 ; c <=imax ; c++ ){
+        for(int d= 0 ; d <=jmax ; d++ ){
             if ( fabs(U[c][d]) > fabs(U1) )
                 U1= U[c][d];
             if ( fabs(V[c][d]) > fabs(V1) )
@@ -107,8 +107,10 @@ double **V
             *dt = dt3;
         }
     }
-
-    *dt = (*dt)*tau;
+    else if (dt3 < dt1){
+        *dt = dt3;
+    }
+    *dt = *dt*tau;
     return;
 }
 
