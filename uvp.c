@@ -35,7 +35,7 @@ double **G
             a=(U[i][j]+U[i+1][j])/2;
             b=(U[i-1][j]+U[i][j])/2;
             du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]-U[i+1][j])/2)-fabs(b)*((U[i-1][j]-U[i][j])/2)))/dx;
-            duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])))/(4*dy);
+            duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))/(4*dy);
             F[i][j]=U[i][j]+dt*((du2x2+du2y2)*(1/Re)-du2dx-duvy+GX);
         }
     }
@@ -46,7 +46,7 @@ double **G
             c=(V[i][j]+V[i][j+1])/2;
             d=(V[i][j-1]+V[i][j])/2;
             dv2dy=(c*c-d*d+ alpha*(fabs(c)*((V[i][j]-V[i][j+1])/2)-fabs(d)*((V[i][j-1]-V[i][j])/2)))/dy;
-            duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])))/(4*dy);
+            duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j])))/(4*dy);
             G[i][j]=V[i][j]+dt*((dv2x2+dv2y2)*(1/Re)-dv2dy-duvx+GY);
         }
     }
@@ -88,8 +88,8 @@ double **V
     double U1=fabs(U[0][0]);
     double V1=fabs(V[0][0]);
     
-    for(int c=0 ; c <=imax ; c++ ){
-        for(int d= 0 ; d <=jmax ; d++ ){
+    for(int c=1 ; c <=imax ; c++ ){
+        for(int d= 1 ; d <=jmax ; d++ ){
             if ( fabs(U[c][d]) > fabs(U1) )
                 U1= U[c][d];
             if ( fabs(V[c][d]) > fabs(V1) )
@@ -107,10 +107,8 @@ double **V
             *dt = dt3;
         }
     }
-    else if (dt3 < dt1){
-        *dt = dt3;
-    }
-    *dt = *dt*tau;
+
+    *dt = (*dt)*tau;
     return;
 }
 
