@@ -1,6 +1,19 @@
 #include "helper.h"
 #include "init.h"
 
+
+void init_uvp (double UI, double VI, double PI, int imax, int jmax, double **U, double **V, double **P)
+{
+	
+	init_matrix( U ,0 ,imax+1 ,0 ,(jmax+1) ,(double)UI );
+
+	init_matrix( V ,0 ,(imax+1) ,0 ,jmax+1 ,(double)VI );
+
+	init_matrix( P ,0 ,(imax+1) ,0 ,(jmax+1) ,(double)PI );
+
+}
+
+
 int read_parameters( const char *szFileName,       /* name of the file */
                     double *Re,                /* reynolds number   */
                     double *UI,                /* velocity x-direction */
@@ -53,6 +66,5 @@ int read_parameters( const char *szFileName,       /* name of the file */
 
    return 1;
 }
-
 
 
