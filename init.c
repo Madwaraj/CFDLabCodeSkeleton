@@ -4,23 +4,18 @@
 
 void init_uvp (double UI, double VI, double PI, int imax, int jmax, double **U, double **V, double **P)
 {
-	for(int i=0; i<=imax+1; i++){
-		for(int j=0; j<=jmax+1; j++){
-			U[i][j]=UI;
-			}
-		}
-    for (int i = 0; i <= imax+1; i++){
-        for (int j = 0; j < jmax+1; j++){
-            V[i][j] = VI;
-        }
-    }
-    for (int i = 0; i <= imax+1; i++){
-        for (int j = 0; j <= jmax+1; j++){
-            P[i][j] = PI;
-        }
-    }
+    
+    init_matrix( U ,0 ,imax ,0 ,(jmax+1) ,UI );
+    
+    init_matrix( V ,0 ,(imax+1) ,0 ,jmax ,VI );
+    
+    init_matrix( P ,0 ,(imax+1) ,0 ,(jmax+1) ,PI );
+    
 }
 
+void init_flag (problem, geometry, imax, jmax, Flag){
+    
+}
 
 int read_parameters( const char *szFileName,       /* name of the file */
                     double *Re,                /* reynolds number   */
