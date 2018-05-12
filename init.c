@@ -4,13 +4,13 @@
 
 void init_uvp (double UI, double VI, double PI, int imax, int jmax, double **U, double **V, double **P)
 {
-	
-	init_matrix( U ,0 ,imax+1 ,0 ,(jmax+1) ,(double)UI );
-
-	init_matrix( V ,0 ,(imax+1) ,0 ,jmax+1 ,(double)VI );
-
-	init_matrix( P ,0 ,(imax+1) ,0 ,(jmax+1) ,(double)PI );
-
+    
+    init_matrix( U ,0 ,imax ,0 ,(jmax+1) ,UI );
+    
+    init_matrix( V ,0 ,(imax+1) ,0 ,jmax ,VI );
+    
+    init_matrix( P ,0 ,(imax+1) ,0 ,(jmax+1) ,PI );
+    
 }
 
 
