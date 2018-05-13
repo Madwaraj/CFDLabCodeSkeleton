@@ -120,7 +120,6 @@ int main(int argn, char** args){
     double TH;
     double TC;
     double beta;
-    int include_T = 1;
 
     char *problem = "natural_convection";
     char *geometry = "natural_convection.pgm";
@@ -128,6 +127,8 @@ int main(int argn, char** args){
     read_parameters(filename, &imax, &jmax, &xlength, &ylength,
                     &dt, &t_end, &tau, &dt_value, &eps, &omg, &alpha, &itermax,
                     &GX, &GY, &Re, &Pr, &UI, &VI, &PI, &TI, &TH, &TC, &beta, &dx, &dy);
+    int include_T = 1;
+
     if(((select==1)||(select==2)))
     {
         if( (Pr!=0)||(TI!=0)||(TH!=0)||(TC!=0)||(beta!=0) ){
@@ -139,12 +140,12 @@ int main(int argn, char** args){
     }
     
     // Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
-    double **P = matrix(0, imax+1, 0, jmax+1);
-    double **U = matrix(0, imax+1, 0, jmax+1);
-    double **V = matrix(0, imax+1, 0, jmax+1);
-    double **F = matrix(0, imax+1, 0, jmax+1);
-    double **G = matrix(0, imax+1, 0, jmax+1);
-    double **RS = matrix(0, imax+1, 0, jmax+1);
+    double **P = matrix(0, imax-1, 0, jmax-1);
+    double **U = matrix(0, imax-1, 0, jmax-1);
+    double **V = matrix(0, imax-1, 0, jmax-1);
+    double **F = matrix(0, imax-1, 0, jmax-1);
+    double **G = matrix(0, imax-1, 0, jmax-1);
+    double **RS = matrix(0, imax-1, 0, jmax-1);
     int **flag = imatrix(0, imax-1, 0, jmax-1);
     if(include_T)
     {
@@ -211,12 +212,12 @@ int main(int argn, char** args){
     }
     
     //Free memory
-    free_matrix( P, 0, imax, 0, jmax);
-    free_matrix( U, 0, imax, 0, jmax);
-    free_matrix( V, 0, imax, 0, jmax);
-    free_matrix( F, 0, imax, 0, jmax);
-    free_matrix( G, 0, imax, 0, jmax);
-    free_matrix(RS, 0, imax, 0, jmax);
+    free_matrix( P, 0, imax-1, 0, jmax-1);
+    free_matrix( U, 0, imax-1, 0, jmax-1);
+    free_matrix( V, 0, imax-1, 0, jmax-1);
+    free_matrix( F, 0, imax-1, 0, jmax-1);
+    free_matrix( G, 0, imax-1, 0, jmax-1);
+    free_matrix(RS, 0, imax-1, 0, jmax-1);
     free_imatrix(flag, 0, imax-1, 0, jmax-1);
     if(include_T) { free_matrix(T, 0, imax-1, 0, jmax-1); }    return -1;
 }
