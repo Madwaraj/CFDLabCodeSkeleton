@@ -1,92 +1,12 @@
-#include "uvp.h"
+#include "helper.h"
 #include "init.h"
+#include "boundary_val.h"
+#include "uvp.h"
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
-void calculate_temp(
-                    double dt,
-                    double **U,
-                    double **V,
-                    double dx,
-                    double dy,
-                    double Re,
-                    double Pr,
-                    double alpha,
-                    double **T,
-                    double TI,
-                    double T_h,
-                    double T_c,
-                    const char* problem
-                    ){
-    for(int i = 0; i<imax; ++i)
-    {
-        for(int j = 0; j<jmax; ++j)
-        {
-            if ( B_N(flag[i][j]) )  T[i][j] = T[i][j+1];
-            
-            if ( B_S(flag[i][j]) )  T[i][j] = T[i][j-1];
-            
-            if ( B_O(flag[i][j]) )  T[i][j] = T[i+1][j];
-            
-            if ( B_W(flag[i][j]) )  T[i][j] = T[i-1][j];
-            
-            if ( B_NO(flag[i][j]) ) T[i][j] = (T[i][j+1] + T[i+1][j])/2;
-            
-            if ( B_NW(flag[i][j]) ) T[i][j] = (T[i][j+1] + T[i-1][j])/2;
-            
-            if ( B_SO(flag[i][j]) ) T[i][j] = (T[i][j-1] + T[i+1][j])/2;
-            
-            if ( B_SW(flag[i][j]) ) T[i][j] = (T[i][j-1] + T[i-1][j])/2;
-            
-            if (flag[i][j]&(1<<3) ) T[i][j] = T[i-1][j];
-            
-            if (flag[i][j]&(1<<4) ) T[i][j] = TI;
-        }
-    }
-    
-    if( strcmp(problem,"natural_convection") )
-    {
-        for(int j=0; j<jmax; j++)
-        {
-            T[0][j] = 2*TH - T[1][j];
-            T[imax-1][j] = 2*TC - T[imax-2][j];
-        }
-    }
-    
-    if( strcmp(problem,"fluid_trap") )
-    {
-        for(int j=0; j<jmax; j++)
-        {
-            T[0][j] = 2*TH - T[1][j];
-            T[imax-1][j] = 2*TC - T[imax-2][j];
-        }
-    }
-    
-    if( strcmp(problem,"rb_convection") )
-    {
-        for(int i=0; i<imax; i++)
-        {
-            T[i][0] = 2*TH - T[i][1];
-            T[i][jmax-1] = 2*TC - T[i][jmax-2];
-        }
-        
-    }
-    double d2t_dx2, d2t_dy2, dut_dx, dvt_dy;
-    for (int i=1; i<imax; i++){
-        for (int j=1; j<=jmax; j++){
-            if(flag[i][j]&(1<<0)){
-                d2t_dx2 = (T[i+1][j] - 2*T[i][j] + T[i-1][j])/(dx*dx);
-                dut_dx = 0.5*dx*(U[i][j]*(T[i][j]+T[i+1][j]) - U[i-1][j]*(T[i-1][j]+T[i][j])) + 0.5*alpha*(U[i][j]*(T[i][j]-T[i+1][j]) - U[i-1][j]*(T[i-1][j]-T[i][j]))/dx;
-                
-                dvt_dy = 0.5*dy*(V[i][j]*(T[i][j]+T[i][j+1]) - V[i-1][j]*(T[i][j-1]+T[i][j])) + 0.5*alpha*(V[i][j]*(T[i][j]-T[i][j+1]) - V[i][j-1]*(T[i][j-1]-T[i][j]))/dy;
-                d2t_dy2 = (T[i][j+1] - 2*T[i][j] + T[i][j-1])/(dy*dy);
-                
-                T[i][j] = T[i][j] + dt*(-dut_dx - dvt_dy + (d2t_dy2 + d2t_dx2)/(Re*Pr));
-            }
-        }
-    }
-}
 
 void calculate_fg(
                   double Re,
@@ -197,7 +117,8 @@ void calculate_rs(
                   int jmax,
                   double **F,
                   double **G,
-                  double **RS
+                  double **RS,
+                  int **flag
                   ){
     int i,j;
     for (i=1;i<=imax;i++){
@@ -221,9 +142,11 @@ void calculate_dt(
                   int jmax,
                   double **U,
                   double **V,
-                  int include_T
+                  int include_T,
+                  int **flag,
+                  double Pr
                   ){
-    double dt1,dt2,dt3,dt4;
+    double dt1,dt2,dt3,dt4,dtmin;
     double U1=fabs(U[0][0]);
     double V1=fabs(V[0][0]);
     
@@ -239,16 +162,16 @@ void calculate_dt(
     dt2 = dx/fabs(U1);
     dt3 = dy/fabs(V1);
     
-    *dt = fmin(dt1,dt2);
-    *dt = fmin(dt,dt3);
+    dtmin = fmin(dt1,dt2);
+    dtmin = fmin(dtmin,dt3);
     
     if(include_T){
     dt4 = 0.5*Re*Pr/(1/(dx*dx) + 1/(dy*dy));
-        *dt = fmin(dt4,dt);
+        dtmin = fmin(dt4,dtmin);
     }
     if( (tau > 0) && (tau < 1))
     {
-        *dt = *dt*tau;
+        *dt = dtmin*tau;
     }
     return;
 }
@@ -283,3 +206,91 @@ void calculate_uv(
     }
     return;
 }
+
+void calculate_temp(
+                    double dt,
+                    double **U,
+                    double **V,
+                    double dx,
+                    double dy,
+                    double Re,
+                    double Pr,
+                    int imax,
+                    int jmax,
+                    double alpha,
+                    double **T,
+                    double TI,
+                    double TH,
+                    double TC,
+                    char* problem,
+                    int **flag
+                    ){
+    for(int i = 0; i<imax; ++i)
+    {
+        for(int j = 0; j<jmax; ++j)
+        {
+            if ( B_N(flag[i][j]) )  T[i][j] = T[i][j+1];
+            
+            if ( B_S(flag[i][j]) )  T[i][j] = T[i][j-1];
+            
+            if ( B_O(flag[i][j]) )  T[i][j] = T[i+1][j];
+            
+            if ( B_W(flag[i][j]) )  T[i][j] = T[i-1][j];
+            
+            if ( B_NO(flag[i][j]) ) T[i][j] = (T[i][j+1] + T[i+1][j])/2;
+            
+            if ( B_NW(flag[i][j]) ) T[i][j] = (T[i][j+1] + T[i-1][j])/2;
+            
+            if ( B_SO(flag[i][j]) ) T[i][j] = (T[i][j-1] + T[i+1][j])/2;
+            
+            if ( B_SW(flag[i][j]) ) T[i][j] = (T[i][j-1] + T[i-1][j])/2;
+            
+            if (flag[i][j]&(1<<3) ) T[i][j] = T[i-1][j];
+            
+            if (flag[i][j]&(1<<4) ) T[i][j] = TI;
+        }
+    }
+    
+    if( strcmp(problem,"natural_convection") )
+    {
+        for(int j=0; j<jmax; j++)
+        {
+            T[0][j] = 2*TH - T[1][j];
+            T[imax-1][j] = 2*TC - T[imax-2][j];
+        }
+    }
+    
+    if( strcmp(problem,"fluid_trap") )
+    {
+        for(int j=0; j<jmax; j++)
+        {
+            T[0][j] = 2*TH - T[1][j];
+            T[imax-1][j] = 2*TC - T[imax-2][j];
+        }
+    }
+    
+    if( strcmp(problem,"rb_convection") )
+    {
+        for(int i=0; i<imax; i++)
+        {
+            T[i][0] = 2*TH - T[i][1];
+            T[i][jmax-1] = 2*TC - T[i][jmax-2];
+        }
+        
+    }
+    double d2t_dx2, d2t_dy2, dut_dx, dvt_dy;
+    for (int i=1; i<imax; i++){
+        for (int j=1; j<=jmax; j++){
+            if(flag[i][j]&(1<<0)){
+                d2t_dx2 = (T[i+1][j] - 2*T[i][j] + T[i-1][j])/(dx*dx);
+                dut_dx = 0.5*dx*(U[i][j]*(T[i][j]+T[i+1][j]) - U[i-1][j]*(T[i-1][j]+T[i][j])) + 0.5*alpha*(U[i][j]*(T[i][j]-T[i+1][j]) - U[i-1][j]*(T[i-1][j]-T[i][j]))/dx;
+                
+                dvt_dy = 0.5*dy*(V[i][j]*(T[i][j]+T[i][j+1]) - V[i-1][j]*(T[i][j-1]+T[i][j])) + 0.5*alpha*(V[i][j]*(T[i][j]-T[i][j+1]) - V[i][j-1]*(T[i][j-1]-T[i][j]))/dy;
+                d2t_dy2 = (T[i][j+1] - 2*T[i][j] + T[i][j-1])/(dy*dy);
+                
+                T[i][j] = T[i][j] + dt*(-dut_dx - dvt_dy + (d2t_dy2 + d2t_dx2)/(Re*Pr));
+            }
+        }
+    }
+}
+

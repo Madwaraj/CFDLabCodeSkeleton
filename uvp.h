@@ -1,18 +1,6 @@
 #ifndef __UVP_H__
 #define __UVP_H__
 
-void calculate_temp(
-                    double dt,
-                    double **U,
-                    double **V,
-                    double dx,
-                    double dy,
-                    double Re,
-                    double Pr,
-                    double gama,
-                    double **T
-                    );
-    
 /**
  * Determines the value of U and G according to the formula
  *
@@ -47,7 +35,7 @@ void calculate_fg(
   double **U,
   double **V,
   double **F,
-  double **G
+  double **G,
   int **flag,
   double beta,
   double **T,
@@ -94,7 +82,8 @@ void calculate_dt(
   double **U,
   double **V,
   double Pr,
-  int include_T
+  int include_T,
+  int **flag
 );
 
 
@@ -124,5 +113,18 @@ void calculate_uv(
   double **P,
   int **flag
 );
+
+void calculate_temp(
+                    double dt,
+                    double **U,
+                    double **V,
+                    double dx,
+                    double dy,
+                    double Re,
+                    double Pr,
+                    double gama,
+                    double **T,
+                    int **flag
+                    );
 
 #endif

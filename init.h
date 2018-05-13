@@ -74,8 +74,33 @@ void init_uvp(
   int jmax,
   double **U,
   double **V,
-  double **P
+  double **P,
+  int **flag
 );
+void init_uvpt(
+               double UI,
+               double VI,
+               double PI,
+               double TI,
+               int imax,
+               int jmax,
+               double** U,
+               double** V,
+               double** P,
+               double** T,
+               int** flag
+               );
 
+int  isfluid(int pic);
+
+void assert_error();
+
+int forbidden_WO(int **pic, int i, int j);
+
+int forbidden_NS(int **pic, int i, int j);
+
+void assert_forbid(int imax, int jmax, int **pic);
+
+void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag);
 #endif
 
