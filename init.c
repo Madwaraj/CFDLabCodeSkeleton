@@ -1,28 +1,35 @@
 #include "helper.h"
 #include "init.h"
 
-int read_parameters( const char *szFileName,       /* name of the file */
-                    double *Re,                /* reynolds number   */
-                    double *UI,                /* velocity x-direction */
-                    double *VI,                /* velocity y-direction */
-                    double *PI,                /* pressure */
-                    double *GX,                /* gravitation x-direction */
-                    double *GY,                /* gravitation y-direction */
-                    double *t_end,             /* end time */
-                    double *xlength,           /* length of the domain x-dir.*/
-                    double *ylength,           /* length of the domain y-dir.*/
-                    double *dt,                /* time step */
-                    double *dx,                /* length of a cell x-dir. */
-                    double *dy,                /* length of a cell y-dir. */
-                    int  *imax,                /* number of cells x-direction*/
-                    int  *jmax,                /* number of cells y-direction*/
-                    double *alpha,             /* uppwind differencing factor*/
-                    double *omg,               /* relaxation factor */
-                    double *tau,               /* safety factor for time step*/
-                    int  *itermax,             /* max. number of iterations  */
-		                               /* for pressure per time step */
-                    double *eps,               /* accuracy bound for pressure*/
-		    double *dt_value)           /* time for output */
+int read_parameters(    const char *szFileName,
+               //     char *problem,
+                 //   char *geometry,
+                    int  *imax,
+                    int  *jmax,
+                    double *xlength,
+                    double *ylength,
+                    double *dt,
+                    double *t_end,
+                    double *tau,
+                    double *dt_value,
+                    double *eps,
+                    double *omg,
+                    double *alpha,
+                    int  *itermax,
+                    double *GX,
+                    double *GY,
+                    double *Re,
+                    double *Pr,
+                    double *UI,
+                    double *VI,
+                    double *PI,
+                    double *TI,
+                    double *TH,
+                    double *TC,
+                    double *beta,
+                    double *dx,
+                    double *dy
+                    )
 {
    READ_DOUBLE( szFileName, *xlength );
    READ_DOUBLE( szFileName, *ylength );

@@ -26,7 +26,7 @@ void calculate_fg(
                   double **T,
                   int include_T
                   ){
-    double d2u_dx2, d2u_dy2, d2v_dx2, d2v_dy2;
+    double a, b,c,d,du2dx,duvy,dv2dy,duvx, d2u_dx2, d2u_dy2, d2v_dx2, d2v_dy2;
     for(int i = 0; i<imax; i++)
     {
         for(int j = 0; j<jmax; j++)
@@ -57,18 +57,24 @@ void calculate_fg(
             {
                 if(include_T){
                     d2u_dx2 = (U[i-1][j]-2*U[i][j]+U[i+1][j])/(dx*dx);
-                    d2v_dy2 = (U[i][j-1]-2*U[i][j]+U[i][j+1])/(dy*dy);
-                    
-                    F[i][j] = U[i][j] + dt*(((d2u_dx2 + d2u_dy2)/Re) - 0.25*(1/dx)*((pow((U[i+1][j]+U[i][j]),2.0) - pow((U[i-1][j]+U[i][j]),2.0))
-                                                                                    +alpha*(fabs(U[i+1][j]+U[i][j])*(U[i][j]-U[i+1][j])-fabs(U[i-1][j]+U[i][j])*(U[i-1][j]-U[i][j]))
-                                                                                    )/dx -0.25*(1/dy)*(((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])- (V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j]))+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))+GX*0.5*((beta*dt)*(T[i][j]+T[i+1][j])));;
-                    
+                    d2u_dy2 = (U[i][j-1]-2*U[i][j]+U[i][j+1])/(dy*dy);
+                    a=(U[i][j]+U[i+1][j])/2;
+                    b=(U[i-1][j]+U[i][j])/2;
+                    du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]-U[i+1][j])/2)-fabs(b)*((U[i-1][j]-U[i][j])/2)))/dx;
+                     duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))/(4*dy);
+                    F[i][j]=U[i][j]+dt*((d2u_dx2+d2u_dy2)*(1/Re)-du2dx-duvy+GX);
+                    F[i][j] = F[i][j]-GX*0.5*((beta*dt)*(T[i][j]+T[i+1][j]));
                 }
                 
                 else{
-                    F[i][j] = U[i][j] + dt*(((d2u_dx2 + d2u_dy2)/Re) - 0.25*(1/dx)*((pow((U[i+1][j]+U[i][j]),2.0) - pow((U[i-1][j]+U[i][j]),2.0))
-                                                                                    +alpha*(fabs(U[i+1][j]+U[i][j])*(U[i][j]-U[i+1][j])-fabs(U[i-1][j]+U[i][j])*(U[i-1][j]-U[i][j]))
-                                                                                    )/dx -0.25*(1/dy)*(((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])- (V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j]))+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))+GX);
+                    d2u_dx2 = (U[i-1][j]-2*U[i][j]+U[i+1][j])/(dx*dx);
+                    d2u_dy2 = (U[i][j-1]-2*U[i][j]+U[i][j+1])/(dy*dy);
+                    a=(U[i][j]+U[i+1][j])/2;
+                    b=(U[i-1][j]+U[i][j])/2;
+                    du2dx=(a*a-b*b+ alpha*(fabs(a)*((U[i][j]-U[i+1][j])/2)-fabs(b)*((U[i-1][j]-U[i][j])/2)))/dx;
+                    duvy=((V[i][j]+V[i+1][j])*(U[i][j]+U[i][j+1])-(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]+U[i][j])+alpha*(fabs(V[i][j]+V[i+1][j])*(U[i][j]-U[i][j+1])-fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1]-U[i][j])))/(4*dy);
+                    F[i][j]=U[i][j]+dt*((d2u_dx2+d2u_dy2)*(1/Re)-du2dx-duvy+GX);
+
                 }
             }
         }
@@ -78,28 +84,23 @@ void calculate_fg(
             if((flag[i][j]&(1<<0))&flag[i+1][j])
             {
                 if(include_T){
-            G[i][j] = V[i][j] + dt*(((d2v_dx2 + d2v_dy2)/Re) -(1/dx)*0.25*(
-                                                                           ((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])- (U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j]))
-                                                                           +alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j]))
-                                                                           )
-                                    
-                                    -(1/dy)*0.25*(
-                                                  (pow((V[i][j]+V[i][j+1]),2.0) - pow((V[i][j-1]+V[i][j]),2.0))
-                                                  +alpha*(fabs(V[i][j]+V[i][j+1])*(V[i][j]-V[i][j+1])-fabs(V[i][j-1]+V[i][j])*(V[i][j-1]-V[i][j]))
-                                                  )
-                                    +GY*0.5*(((beta*dt)*(T[i][j]+T[i][j+1]))));;
+                    d2v_dy2= (V[i][j+1]-2*V[i][j]+V[i][j-1])/(dy*dy);
+                    d2v_dx2= (V[i+1][j]-2*V[i][j]+V[i-1][j])/(dx*dx);
+                    c=(V[i][j]+V[i][j+1])/2;
+                    d=(V[i][j-1]+V[i][j])/2;
+                    dv2dy=(c*c-d*d+ alpha*(fabs(c)*((V[i][j]-V[i][j+1])/2)-fabs(d)*((V[i][j-1]-V[i][j])/2)))/dy;
+                    duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j])))/(4*dy);
+                    G[i][j]=V[i][j]+dt*((d2v_dx2+d2v_dy2)*(1/Re)-dv2dy-duvx+GY);
+                    G[i][j] = G[i][j]-GY*0.5*((beta*dt)*(T[i][j]+T[i][j+1]));
         }
                 else {
-                    G[i][j] = V[i][j] + dt*(((d2v_dx2 + d2v_dy2)/Re) -(1/dx)*0.25*(
-                                                                                   ((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])- (U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j]))
-                                                                                   +alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j]))
-                                                                                   )
-                                            
-                                            -(1/dy)*0.25*(
-                                                          (pow((V[i][j]+V[i][j+1]),2.0) - pow((V[i][j-1]+V[i][j]),2.0))
-                                                          +alpha*(fabs(V[i][j]+V[i][j+1])*(V[i][j]-V[i][j+1])-fabs(V[i][j-1]+V[i][j])*(V[i][j-1]-V[i][j]))
-                                                          )
-                                            +GY);;
+                    d2v_dy2= (V[i][j+1]-2*V[i][j]+V[i][j-1])/(dy*dy);
+                    d2v_dx2= (V[i+1][j]-2*V[i][j]+V[i-1][j])/(dx*dx);
+                    c=(V[i][j]+V[i][j+1])/2;
+                    d=(V[i][j-1]+V[i][j])/2;
+                    dv2dy=(c*c-d*d+ alpha*(fabs(c)*((V[i][j]-V[i][j+1])/2)-fabs(d)*((V[i][j-1]-V[i][j])/2)))/dy;
+                    duvx=((U[i][j]+U[i][j+1])*(V[i][j]+V[i+1][j])-(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]+V[i][j])+alpha*(fabs(U[i][j]+U[i][j+1])*(V[i][j]-V[i+1][j])-fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j]-V[i][j])))/(4*dy);
+                    G[i][j]=V[i][j]+dt*((d2v_dx2+d2v_dy2)*(1/Re)-dv2dy-duvx+GY);
                 }
     }
         }
@@ -206,22 +207,22 @@ void calculate_uv(
 }
 
 void calculate_temp(
-                    double dt,
-                    double **U,
-                    double **V,
-                    double dx,
-                    double dy,
-                    double Re,
+                    double **T,
                     double Pr,
+                    double Re,
                     int imax,
                     int jmax,
+                    double dx,
+                    double dy,
+                    double dt,
                     double alpha,
-                    double **T,
+                    double **U,
+                    double **V,
+                    int **flag,
                     double TI,
                     double TH,
                     double TC,
-                    char* problem,
-                    int **flag
+                    char* problem
                     ){
     for(int i = 0; i<imax; ++i)
     {
@@ -251,7 +252,7 @@ void calculate_temp(
     
     if( strcmp(problem,"natural_convection") )
     {
-        for(int j=0; j<jmax; j++)
+        for(int j=1; j<jmax; j++)
         {
             T[0][j] = 2*TH - T[1][j];
             T[imax-1][j] = 2*TC - T[imax-2][j];
@@ -260,10 +261,15 @@ void calculate_temp(
     
     if( strcmp(problem,"fluid_trap") )
     {
-        for(int j=0; j<jmax; j++)
+        for(int j=1; j<=jmax; j++)
         {
             T[0][j] = 2*TH - T[1][j];
-            T[imax-1][j] = 2*TC - T[imax-2][j];
+            T[imax+1][j] = 2*TC - T[imax][j];
+        }
+        for(int i=1; i<=imax; i++)
+        {
+            T[i][0] = 2*TC - T[i][1];
+            T[i][jmax+1] = 2*TC - T[i][jmax];
         }
     }
     

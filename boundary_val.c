@@ -13,20 +13,20 @@ void special_boundary(int imax, int jmax, double **U,double **V, int **flag)
     }
 }
 
-int B_O(int flag){
-    return flag & (1<<8) && ~( flag & ((1<<5) | (1<<6)) );
-}
-
-int B_W(int flag){
-    return flag & (1<<7) && ~( flag & ((1<<5) | (1<<6)) );
-}
-
 int B_N(int flag){
     return flag & (1<<5) && ~( flag & ((1<<7) | (1<<8)) );
 }
 
 int B_S(int flag){
     return flag & (1<<6) && ~( flag & ((1<<7) | (1<<8)) );
+}
+
+int B_O(int flag){
+    return flag & (1<<8) && ~( flag & ((1<<5) | (1<<6)) );
+}
+
+int B_W(int flag){
+    return flag & (1<<7) && ~( flag & ((1<<5) | (1<<6)) );
 }
 
 int B_NO(int flag){
@@ -45,7 +45,7 @@ int B_SW(int flag){
     return flag & (1<<7) &&  flag & (1<<6);
 }
 
-void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
+void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag, double **F, double **G, double **P)
 {
     for(int i = 0; i<imax; ++i)
     {
@@ -60,6 +60,8 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         V[i][j] = 0;
                         U[i-1][j] = -U[i-1][j+1];
                         U[i][j] = -U[i][j+1];
+                        G[i][j] = V[i][j];
+                        P[i][j] = P[i][j+1];
                     }
                     
                     if ( B_S(flag[i][j]) )
@@ -67,6 +69,8 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         V[i][j-1] = 0;
                         U[i-1][j] = -U[i-1][j-1];
                         U[i][j] = -U[i][j-1];
+                        G[i][j] = V[i][j-1];
+                        P[i][j] = P[i][j-1];
                     }
                     
                     if ( B_O(flag[i][j]) )
@@ -74,6 +78,8 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i][j] = 0;
                         V[i][j-1] = -V[i+1][j-1];
                         V[i][j] = -V[i+1][j];
+                        F[i][j] = U[i][j];
+                        P[i][j] = P[i+1][j];
                     }
                     
                     if ( B_W(flag[i][j]) )
@@ -81,6 +87,8 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i-1][j] = 0;
                         V[i][j-1] = -V[i-1][j-1];
                         V[i][j] = -V[i-1][j];
+                        F[i-1][j] = U[i-1][j];
+                        P[i][j] = P[i-1][j];
                     }
                     
                     if ( B_NO(flag[i][j])  )
@@ -89,6 +97,9 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i-1][j] = -U[i-1][j+1];
                         V[i][j] = 0;
                         V[i][j-1] = -V[i+1][j-1];
+                        F[i][j] = U[i][j];
+                        G[i][j] = V[i][j];
+                        P[i][j] = (P[i][j+1]+P[i+1][j])*0.5;
                     }
                     
                     if ( B_NW(flag[i][j])  )
@@ -97,6 +108,9 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i][j] = - U[i][j+1];
                         V[i][j] = 0;
                         V[i][j-1] = -V[i-1][j-1];
+                        F[i-1][j] = U[i-1][j];
+                        G[i][j] = V[i][j];
+                        P[i][j] = (P[i][j+1]+P[i-1][j])*0.5;
                     }
                     
                     if ( B_SO(flag[i][j]) ){
@@ -104,6 +118,9 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i-1][j] = -U[i-1][j-1];
                         V[i][j-1]=0;
                         V[i][j] = -V[i+1][j];
+                        F[i][j] = U[i][j];
+                        G[i][j-1] = V[i][j-1];
+                        P[i][j] = (P[i][j-1]+P[i+1][j])*0.5;
                     }
                     
                     if ( B_SW(flag[i][j]) ){
@@ -111,6 +128,9 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
                         U[i][j] = -U[i][j-1];
                         V[i][j-1] = 0;
                         V[i][j] = -V[i-1][j];
+                        F[i-1][j] = U[i-1][j];
+                        G[i][j-1] = V[i][j-1];
+                        P[i][j] = (P[i][j-1]+P[i-1][j])*0.5;
                     }
                     break;
                     
@@ -182,5 +202,6 @@ void boundaryvalues(int imax,int jmax,double **U,double **V,int **flag)
             }
         }
     }
+    printf("Boudaries set");
 }
 

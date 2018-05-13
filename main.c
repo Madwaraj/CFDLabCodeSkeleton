@@ -142,6 +142,8 @@ int main(int argn, char** args){
     read_parameters(filename, &imax, &jmax, &xlength, &ylength,
                     &dt, &t_end, &tau, &dt_value, &eps, &omg, &alpha, &itermax,
                     &GX, &GY, &Re, &Pr, &UI, &VI, &PI, &TI, &TH, &TC, &beta, &dx, &dy);
+    
+    //printf ("VI= %f\n",VI);
     int include_T = 1;
 
     if(((select==1)||(select==2)))
@@ -186,7 +188,7 @@ int main(int argn, char** args){
         
         printf("Time Step is %f \n", t);
         
-        boundaryvalues(imax, jmax, U, V, flag);
+        boundaryvalues(imax, jmax, U, V, flag, F, G, P);
 
         if(include_T)
         {
