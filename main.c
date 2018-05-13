@@ -1,9 +1,10 @@
 #include "helper.h"
-#include "init.h"
-#include "boundary_val.h"
-#include "uvp.h"
-#include "sor.h"
 #include "visual.h"
+#include "init.h"
+#include"boundary_val.h"
+#include"uvp.h"
+#include"sor.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -113,22 +114,23 @@ int main(int argn, char** args){
     
     int data;
     double Pr;
+    double **T;
+
     double TI;
     double TH;
     double TC;
     double beta;
+    int include_T = 1;
+
     char *problem = "natural_convection";
     char *geometry = "natural_convection.pgm";
     // Extracting parameter values from data file and assigning them to variables
-    data = read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end,
-                           &xlength, &ylength, &dt, &dx, &dy, &imax, &jmax,
-                           &alpha, &omg, &tau, &itermax, &eps, &dt_value);
-    
-    data++;
-    int include_T = 1;
+    read_parameters(filename, &imax, &jmax, &xlength, &ylength,
+                    &dt, &t_end, &tau, &dt_value, &eps, &omg, &alpha, &itermax,
+                    &GX, &GY, &Re, &Pr, &UI, &VI, &PI, &TI, &TH, &TC, &beta, &dx, &dy);
     if(((select==1)||(select==2)))
     {
-        if( (Pr!=0)||(TI!=0)||(T_h!=0)||(T_c!=0)||(beta!=0) ){
+        if( (Pr!=0)||(TI!=0)||(TH!=0)||(TC!=0)||(beta!=0) ){
             char szBuff[80];
             sprintf( szBuff, "Input file incompatible. \n");
             ERROR( szBuff );
@@ -136,7 +138,6 @@ int main(int argn, char** args){
         else  include_T = 0;
     }
     
-    double **T;
     // Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
     double **P = matrix(0, imax+1, 0, jmax+1);
     double **U = matrix(0, imax+1, 0, jmax+1);
@@ -152,7 +153,7 @@ int main(int argn, char** args){
     //Initialize U, V and P
     
     init_flag(problem,geometry, imax, jmax, flag);
-    if(include_temp)
+    if(include_T)
     {
         init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
     }
@@ -165,34 +166,40 @@ int main(int argn, char** args){
     while (t < t_end)
     {
         
-        calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V); // Adaptive time stepping
+        calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, Pr, include_T); // Adaptive time stepping
         
         printf("Time Step is %f \n", t);
         
-        boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
-        
-        calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G); // Computing Fn and Gn
-        
-        calculate_rs(dt, dx, dy, imax, jmax, F, G, RS); // Computing the right hand side of the Pressure Eqn
-        
+        boundaryvalues(imax, jmax, U, V, flag);
+
+        if(include_T)
+        {
+            calculate_temp(T, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag, TI, TH, TC, problem);
+        }
+        special_boundary(imax, jmax, U, V, flag);
+
+        calculate_fg(Re,GX,GY,alpha,dt,dx,dy,imax,jmax,U,V,F,G,flag, beta, T, include_T);
+
+        calculate_rs(dt,dx,dy,imax,jmax,F,G,RS,flag);
+
         int it = 0;
         
         double res = 1.0; // Residual for the SOR
         
         while(it < itermax && res > eps)
         {
-            sor(omg, dx, dy, imax, jmax, P, RS, &res); // Successive over-realaxation to solve the Pressure Eqn
+            sor(omg, dx, dy, imax, jmax, P, RS, &res, flag); // Successive over-realaxation to solve the Pressure Eqn
             it++;
         }
         
-        calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computing U, V for the next time-step
+        calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P,flag); // Computing U, V for the next time-step
         
         mkdir("Output", 0777);
         
         if (t >= n1*dt_value)
         {
             
-            write_vtkFile("Output/Solution", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+            write_vtkFile("Output/Solution", n, xlength, ylength, imax, jmax, dx, dy, U, V, P, T, include_T);
             printf("%f Time Elapsed \n", n1*dt_value);
             n1++;
             continue;
