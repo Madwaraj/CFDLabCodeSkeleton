@@ -220,9 +220,10 @@ void calculate_dt(
                   int imax,
                   int jmax,
                   double **U,
-                  double **V
+                  double **V,
+                  int include_T
                   ){
-    double dt1,dt2,dt3;
+    double dt1,dt2,dt3,dt4;
     double U1=fabs(U[0][0]);
     double V1=fabs(V[0][0]);
     
@@ -234,21 +235,21 @@ void calculate_dt(
                 V1 = V[c][d];
         }
     }
-    dt1 = 0.5*Re*Pr/(1/(dx*dx) + 1/(dy*dy));
+    dt1 = 0.5*Re/(1/(dx*dx) + 1/(dy*dy));
     dt2 = dx/fabs(U1);
     dt3 = dy/fabs(V1);
     
-    *dt = dt1;
-    if (dt2 < dt1){
-        *dt =dt2;
-        if (dt3 < dt2){
-            *dt = dt3;
-        }
+    *dt = fmin(dt1,dt2);
+    *dt = fmin(dt,dt3);
+    
+    if(include_T){
+    dt4 = 0.5*Re*Pr/(1/(dx*dx) + 1/(dy*dy));
+        *dt = fmin(dt4,dt);
     }
-    else if (dt3 < dt1){
-        *dt = dt3;
+    if( (tau > 0) && (tau < 1))
+    {
+        *dt = *dt*tau;
     }
-    *dt = *dt*tau;
     return;
 }
 

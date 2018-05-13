@@ -1,7 +1,18 @@
 #ifndef __UVP_H__
 #define __UVP_H__
 
-
+void calculate_temp(
+                    double dt,
+                    double **U,
+                    double **V,
+                    double dx,
+                    double dy,
+                    double Re,
+                    double Pr,
+                    double gama,
+                    double **T
+                    );
+    
 /**
  * Determines the value of U and G according to the formula
  *
@@ -37,6 +48,10 @@ void calculate_fg(
   double **V,
   double **F,
   double **G
+  int **flag,
+  double beta,
+  double **T,
+  int include_T
 );
 
 
@@ -55,7 +70,8 @@ void calculate_rs(
   int jmax,
   double **F,
   double **G,
-  double **RS
+  double **RS,
+  int **flag
 );
 
 
@@ -76,7 +92,9 @@ void calculate_dt(
   int imax,
   int jmax,
   double **U,
-  double **V
+  double **V,
+  double Pr,
+  int include_T
 );
 
 
@@ -103,7 +121,8 @@ void calculate_uv(
   double **V,
   double **F,
   double **G,
-  double **P
+  double **P,
+  int **flag
 );
 
 #endif
