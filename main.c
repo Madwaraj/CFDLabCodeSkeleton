@@ -50,29 +50,47 @@ int main(int argn, char** args){
     printf("1. Karman Vortex Street \n");
     printf("2. Flow over a Step \n");
     printf("3. Natural Convection \n");
-    printf("4. Fluid Trap \n");
-    printf("5. rayleigh-Benard Convection \n");
+    printf("4. Natural Convection with high Re \n");
+    printf("5. Fluid Trap \n");
+    printf("6. rayleigh-Benard Convection \n");
     
     int select;
     scanf("%d",&select);
     
     const char* filename = "0";
+    char *problem;
+    char *geometry;
     switch(select)
     {
         case 1:
             filename = "karman_vortex.dat";
+            problem = "karman_vortex";
+            geometry = "karman_vortex.pgm";
             break;
         case 2:
             filename = "step_flow.dat";
+            problem = "step_flow";
+            geometry = "channel-bfs.pgm";
             break;
         case 3:
             filename = "natural_convection.dat";
+            problem = "natural_convection";
+            geometry = "natural_convection.pgm";
             break;
         case 4:
-            filename = "fluid_trap.dat";
+            filename = "natural_convection2.dat";
+            problem = "natural_convection";
+            geometry = "natural_convection.pgm";
             break;
         case 5:
+            filename = "fluid_trap.dat";
+            problem = "fluid_trap";
+            geometry = "fluid_trap.pgm";
+            break;
+        case 6:
             filename = "RB_convection.dat";
+            problem = "RB_convection";
+            geometry = "RB_convection.pgm";
             break;
     }
     // Reading the problem data
@@ -112,7 +130,6 @@ int main(int argn, char** args){
     double GX;                /* gravitation x-direction */
     double GY;                /* gravitation y-direction */
     
-    int data;
     double Pr;
     double **T;
 
@@ -121,8 +138,6 @@ int main(int argn, char** args){
     double TC;
     double beta;
 
-    char *problem = "natural_convection";
-    char *geometry = "natural_convection.pgm";
     // Extracting parameter values from data file and assigning them to variables
     read_parameters(filename, &imax, &jmax, &xlength, &ylength,
                     &dt, &t_end, &tau, &dt_value, &eps, &omg, &alpha, &itermax,
@@ -160,7 +175,7 @@ int main(int argn, char** args){
     }
     else
     {
-    init_uvp(UI, VI, PI, imax, jmax, U, V, P);
+    init_uvp(UI, VI, PI, imax, jmax, U, V, P, flag);
     }
     int n1 = 0;
     
