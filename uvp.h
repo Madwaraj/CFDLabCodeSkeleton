@@ -81,9 +81,8 @@ void calculate_dt(
   int jmax,
   double **U,
   double **V,
-  double Pr,
   int include_T,
-  int **flag
+  double Pr
 );
 
 
@@ -122,8 +121,14 @@ void calculate_temp(
                     double dy,
                     double Re,
                     double Pr,
-                    double gama,
+                    int imax,
+                    int jmax,
+                    double alpha,
                     double **T,
+                    double TI,
+                    double TH,
+                    double TC,
+                    char* problem,
                     int **flag
                     );
 

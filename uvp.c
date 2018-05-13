@@ -1,7 +1,6 @@
-#include "helper.h"
-#include "init.h"
-#include "boundary_val.h"
 #include "uvp.h"
+#include"helper.h"
+#include"boundary_val.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -22,8 +21,8 @@ void calculate_fg(
                   double **V,
                   double **F,
                   double **G,
-                  double beta,
                   int **flag,
+                  double beta,
                   double **T,
                   int include_T
                   ){
@@ -143,7 +142,6 @@ void calculate_dt(
                   double **U,
                   double **V,
                   int include_T,
-                  int **flag,
                   double Pr
                   ){
     double dt1,dt2,dt3,dt4,dtmin;
