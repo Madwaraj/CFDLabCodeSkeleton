@@ -1,12 +1,11 @@
 #ifndef __RANDWERTE_H__
 #define __RANDWERTE_H__
 
-
+#include<math.h>
 /**
  * The boundary values of the problem are set.
  */
-
-void special_boundary(int imax,int jmax,double **U,double **V,int **flag);
+void obstacle_boundary(int imax,int jmax,double **U,double **V,int **flag);
 
 void boundaryvalues(
   int imax,
