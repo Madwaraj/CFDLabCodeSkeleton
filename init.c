@@ -13,9 +13,6 @@ void init_uvp (double UI, double VI, double PI, int imax, int jmax, double **U, 
     
 }
 
-void init_flag (problem, geometry, imax, jmax, Flag){
-    
-}
 
 int read_parameters( const char *szFileName,       /* name of the file */
                     double *Re,                /* reynolds number   */

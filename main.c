@@ -91,11 +91,11 @@ int main(int argn, char** args){
 
 	// Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	double **P = matrix(0, imax+1, 0, jmax+1);
-    	double **U = matrix(0, imax+1, 0, jmax+1);
-    	double **V = matrix(0, imax+1, 0, jmax+1);
-    	double **F = matrix(0, imax+1, 0, jmax+1);
-    	double **G = matrix(0, imax+1, 0, jmax+1);
-    	double **RS = matrix(0, imax+1, 0, jmax+1);
+    	double **U = matrix(0, imax, 0, jmax+1);
+    	double **V = matrix(0, imax+1, 0, jmax);
+    	double **F = matrix(0, imax, 0, jmax+1);
+    	double **G = matrix(0, imax+1, 0, jmax);
+    	double **RS = matrix(1, imax, 1, jmax);
 
 	//Initialize U, V and P	
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);

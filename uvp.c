@@ -85,11 +85,11 @@ double **U,
 double **V
 ){
     double dt1,dt2,dt3;
-    double U1=fabs(U[0][0]);
-    double V1=fabs(V[0][0]);
+    double U1=fabs(U[1][1]);
+    double V1=fabs(V[1][1]);
     
-    for(int c=0 ; c <=imax ; c++ ){
-        for(int d= 0 ; d <=jmax ; d++ ){
+    for(int c=1 ; c <=imax ; c++ ){
+        for(int d= 1 ; d <=jmax ; d++ ){
             if ( fabs(U[c][d]) > fabs(U1) )
                 U1= U[c][d];
             if ( fabs(V[c][d]) > fabs(V1) )
