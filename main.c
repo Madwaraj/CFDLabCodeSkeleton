@@ -5,7 +5,8 @@
 #include "boundary_val.h"
 #include "sor.h"
 #include <stdio.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -102,6 +103,8 @@ int main(int argn, char** args){
 									
 	int n1 = 0;
 
+	mkdir("Output",0777);
+
 	while (t < t_end) 
 	{
 
@@ -129,7 +132,7 @@ int main(int argn, char** args){
 
 		if (t >= n1*dt_value)
   		{
-   			write_vtkFile("Solution", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+   			write_vtkFile("Output/Solution", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
 			printf("%f Time Elapsed \n", n1*dt_value);
     			n1++;
     			continue;
@@ -141,12 +144,12 @@ int main(int argn, char** args){
 	}
 	
 	//Free memory
-    	free_matrix( P, 0, imax, 0, jmax);
-    	free_matrix( U, 0, imax, 0, jmax);
-    	free_matrix( V, 0, imax, 0, jmax);
-    	free_matrix( F, 0, imax, 0, jmax);
-    	free_matrix( G, 0, imax, 0, jmax);
-    	free_matrix(RS, 0, imax, 0, jmax);
+    	free_matrix( P, 0, imax+1, 0, jmax+1);
+    	free_matrix( U, 0, imax, 0, jmax+1);
+    	free_matrix( V, 0, imax+1, 0, jmax);
+    	free_matrix( F, 0, imax, 0, jmax+1);
+    	free_matrix( G, 0, imax+1, 0, jmax);
+    	free_matrix(RS, 1, imax, 1, jmax);
 	
   return -1;
 }
