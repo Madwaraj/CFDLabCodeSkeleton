@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <mpi.h>
+#include <parallel.h>
+#include <math.h>
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -55,6 +58,12 @@ int main(int argn, char** args){
 	int  jmax;                /* number of cells y-direction*/
 	double dx;                /* length of a cell x-dir. */
     	double dy;                /* length of a cell y-dir. */
+	int il;
+	int ir;
+	int jt;
+	int jb;
+	omg_i;
+	omg_j;
 
 	// Time Stepping Data	
 
@@ -83,20 +92,111 @@ int main(int argn, char** args){
 
 	int data;
 
-	// Extracting parameter values from data file and assigning them to variables
-	data = read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end, 
-				&xlength, &ylength, &dt, &dx, &dy, &imax, &jmax,
-                                &alpha, &omg, &tau, &itermax, &eps, &dt_value);
-							
-	data++;
+	char message = 'X';
 
-	// Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
-	double **P = matrix(0, imax+1, 0, jmax+1);
-    	double **U = matrix(0, imax, 0, jmax+1);
-    	double **V = matrix(0, imax+1, 0, jmax);
-    	double **F = matrix(0, imax, 0, jmax+1);
-    	double **G = matrix(0, imax+1, 0, jmax);
-    	double **RS = matrix(1, imax, 1, jmax);
+	// MPI data
+
+	int myrank;
+	int omg_i; 
+	int omg_j; 
+	int iproc; 
+	int jproc; 
+	int num_proc;
+	int rank_l;
+	int rank_r;
+	int rank_t;
+	int rank_b;
+	double bufSend;
+	double bufRecv;
+	MPI_Status status;
+	int chuk;
+	
+
+	MPI_Init(int argn, char** args);
+	MPI_Comm_size(MPI_COMM_WORLD, &num_proc); // Not sure if this is required here since init_parallel already has it
+	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+	if (rank == 0 )
+	{
+
+		// Extracting parameter values from data file and assigning them to variables
+		data = read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end, 
+					&xlength, &ylength, &dt, &dx, &dy, &imax, &jmax,
+                                	&alpha, &omg, &tau, &itermax, &eps, &dt_value, &iproc, &jproc);
+							
+		data++;
+
+		/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
+		double **P = matrix(0, imax+1, 0, jmax+1);
+    		double **U = matrix(0, imax, 0, jmax+1);
+    		double **V = matrix(0, imax+1, 0, jmax);
+    		double **F = matrix(0, imax, 0, jmax+1);
+    		double **G = matrix(0, imax+1, 0, jmax);
+    		double **RS = matrix(1, imax, 1, jmax); */ //Not Sure if this is necessary
+
+
+		// Segregating the large domain into smaller sub-domains based on number of processes
+		if (num_proc % 2 == 0)
+		{
+			omg_i = (int)sqrt(num_proc);
+			omg_j = num_proc - omg_i;
+		}
+		else if (num_proc % 2 == 1)
+		{
+			float temp = sqrt(num_proc);
+			if (temp * temp == num_proc) // To check if the number is perfect square
+			{
+				omg_i = temp;
+				omg_j = temp;
+			}
+			else
+			{
+				omg_i = num_proc;
+				omg_j = 1
+			} 	
+		}
+		else
+		{
+			printf("\n Invalid Domain Size, Exiting!!");
+			break;
+		}
+		
+		// Broadcasting data to all processes
+
+		MPI_Bcast(&Re, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&t_end, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&xlength, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&ylength, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&dt, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&dx, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&dy, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&imax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&jmax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&alpha, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&omg, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&tau, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&itermax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&eps, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&dt_value, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+
+		for (i = 0; i < omg_i; i++)
+		{
+			for(j = 0; j < omg_j; j++)
+			{
+				il[i][j] = (imax / omg_i) * i;
+				ir[i][j] = (imax / omg_i) * (i + 1);
+				jt[i][j] = (jmax / omg_j) * j;
+				jb[i][j] = (jmax / omg_j) * (j + 1);
+			}
+		}
+	} // End of work for Master Thread
+
+	parallel_init(int iproc, int jproc, int imax, int jmax, int *myrank,
+		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
+		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc)	//Initializing the parallel processes	
+		
+
 
 	//Initialize U, V and P	
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
@@ -104,6 +204,7 @@ int main(int argn, char** args){
 	int n1 = 0;
 
 	mkdir("Output",0777);
+
 
 	while (t < t_end) 
 	{
@@ -126,6 +227,9 @@ int main(int argn, char** args){
 		{
 			sor(omg, dx, dy, imax, jmax, P, RS, &res); // Successive over-realaxation to solve the Pressure Eqn    	
 			it++;
+
+			void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
+		int rank_r, int rank_b, int rank_t, double *bufSend, double *bufRecv, MPI_Status *status, int chunk) // Exchange Pressure values
 		}
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computing U, V for the next time-step
@@ -150,6 +254,8 @@ int main(int argn, char** args){
     	free_matrix( F, 0, imax, 0, jmax+1);
     	free_matrix( G, 0, imax+1, 0, jmax);
     	free_matrix(RS, 1, imax, 1, jmax);
+
+	Program_Stop(*message);
 	
   return -1;
 }
