@@ -13,14 +13,14 @@ void init_parallel (int iproc, int jproc, int imax, int jmax,
 void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		int sndID, int sndColIdx, double *bufSend, int rcvID, int rcvColIdx,
 		double *bufRecv, int elCnt, MPI_Status *status);
-/*Called within pressure_comm*/
+/* Called within pressure_comm */
 
 
 
 void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 		int rank_r, int rank_b, int rank_t, double *bufSend, double *bufRecv,
 		MPI_Status *status, int chunk);
-/*Exchanges the pressures on sub-domain edges to the respective neighbouring ghost cells*/
+/* Exchanges the pressures on sub-domain edges to the respective neighbouring ghost cells */
 
 void uv_MPI_SndRcv(double **U, double **V,
 		int opDirn, //controls direction of send-receive
@@ -32,7 +32,7 @@ void uv_MPI_SndRcv(double **U, double **V,
 		int rcvID, //Rank of process from which data must be received
 		int rcvColIdx, int rcvColIdx2, // Indices of fixed row/col of the receiving data
 		double *bufRecv, int elCnt, MPI_Status *status);
-/*Called within uv_comm*/
+/* Called within uv_comm */
 
 void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
 		int rank_r, int rank_b, int rank_t, double *bufSend, double *bufRecv,

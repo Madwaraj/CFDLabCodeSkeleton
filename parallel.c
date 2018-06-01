@@ -166,12 +166,12 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		break;
 	}
 
-	//Store 1VelComp values
+	// Store 1VelComp values
 	for (ctr = lowBound; ctr < upBound; ctr++) {
 		bufSend[ctr2] = (*vel1)[(*snd_i)][(*snd_j)];
 		ctr2++;
 	}
-	//Store 2VelComp values
+	// Store 2VelComp values
 	for (ctr = lowBound2; ctr < upBound2; ctr++) {
 		bufSend[ctr2] = (*vel2)[(*snd_i2)][(*snd_j2)];
 		ctr2++;
@@ -180,12 +180,12 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, MPI_ANY_TAG, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_NO_OP) {
-		//Receive 1VelComp values
+		// Receive 1VelComp values
 		for (ctr = lowBound; ctr < upBound; ctr++) {
 			(*vel1)[(*rcv_i)][(*rcv_j)] = bufRecv[ctr2];
 			ctr2++;
 		}
-		//Receive 2VelComp values
+		// Receive 2VelComp values
 		for (ctr = lowBound2; ctr < upBound2; ctr++) {
 			(*vel2)[(*rcv_i2)][(*rcv_j2)] = bufRecv[ctr2];
 			ctr2++;
