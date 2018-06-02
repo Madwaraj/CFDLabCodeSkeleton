@@ -4,10 +4,51 @@ void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
 		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-	if (0 < myrank && (*il) != 1)
-		rank_l = myrank - 1;
-	else
-		rank_l = MPI_PROC_NULL;
+	int bufRcvT[6];
+	MPI_Recv(bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
+	MPI_STATUS_IGNORE);
+	*omg_i = bufRcvT[0];
+	*omg_j = bufRcvT[1];
+	*il = bufRcvT[2];
+	*ir = bufRcvT[3];
+	*jb = bufRcvT[4];
+	*jt = bufRcvT[5];
+
+//Assign the Neighbours
+	if (iproc > 1) { //If there are divisions in the horizontal direction
+		//Left Neighbour
+		if (omg_i > 1) {
+			*rank_l = myrank - 1;
+		} else {
+			*rank_l = MPI_PROC_NULL;
+		}
+		//Right Neighbour
+		if (omg_i < iproc) {
+			*rank_r = myrank + 1;
+		} else {
+			*rank_r = MPI_PROC_NULL;
+		}
+	} else { // If there are no horizontal divisions
+		*rank_r = MPI_PROC_NULL;
+		*rank_l = MPI_PROC_NULL;
+	}
+	if (jproc > 1) { //Ensures there are divisions in the vertical direction
+		//Bottom Neighbour
+		if (omg_j > 1) {
+			*rank_b = myrank - iproc;
+		} else {
+			*rank_b = MPI_PROC_NULL;
+		}
+		//Top Neighbour
+		if (omg_i < jproc) {
+			*rank_t = myrank + iproc;
+		} else {
+			*rank_t = MPI_PROC_NULL;
+		}
+	} else { // If there are no vertical divisions
+		*rank_b = MPI_PROC_NULL;
+		*rank_t = MPI_PROC_NULL;
+	}
 }
 
 void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,

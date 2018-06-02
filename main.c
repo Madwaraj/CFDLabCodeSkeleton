@@ -184,16 +184,16 @@ int main(int argn, char** args) {
 					bufTemp[3] = il + iChunk - 1; // ir
 					lastUsedir = bufTemp[3];
 				} else {
-					bufTemp[2] = lastUsedir; //il
-					bufTemp[3] = imax; //il
+					bufTemp[2] = lastUsedir + 1; //il
+					bufTemp[3] = imax - 1; //il
 				}
 				if (j != jproc) {
 					bufTemp[4] = (j - 1) * jChunk; //jb
 					bufTemp[5] = jb + jChunk - 1; //jt
 					lastUsedjt = bufTemp[5];
 				} else {
-					bufTemp[4] = lastUsedjt; //jb
-					bufTemp[5] = jmax; //jt
+					bufTemp[4] = lastUsedjt + 1; //jb
+					bufTemp[5] = jmax - 1; //jt
 				}
 				if (sndrank != 0) {
 					MPI_Send(bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
@@ -208,6 +208,20 @@ int main(int argn, char** args) {
 				}
 				sndrank++;
 			}
+		}
+
+		//Assign Neighbours for Master Process
+		rank_l = MPI_PROC_NULL;
+		rank_b = MPI_PROC_NULL;
+		if (iproc > 1) { //If there are divisions in the horizontal direction
+			rank_r = 1;
+		} else { // If there are no horizontal divisions
+			rank_r = MPI_PROC_NULL;
+		}
+		if (jproc > 1) { //Ensures there are divisions in the vertical direction
+			rank_t = 1;
+		} else { // If there are no vertical divisions
+			rank_t = MPI_PROC_NULL;
 		}
 	}
 	// End of work for Master Thread
