@@ -109,7 +109,8 @@ int main(int argn, char** args) {
 	int chunk;
 	int iChunk;
 	int jChunk;
-
+	int lastUsedir;
+	int lastUsedjt;
 	MPI_Init(&argn, &args);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
@@ -172,32 +173,45 @@ int main(int argn, char** args) {
 		jChunk = jmax / jproc;
 
 		// Assign values for Master Process
-		omg_i=1;
-		omg_j=1;
-		il=0;
-		ir=iChunk-1;
-		jb=0;
-		jt=jChunk-1;
+		omg_i = 1;
+		omg_j = 1;
+		il = 0;
+		ir = iChunk - 1;
+		jb = 0;
+		jt = jChunk - 1;
 
 		// Assign values for Slave Processes
 		sndrank = 0;
 		int bufTemp[6];
-		for (int j = 1; j < jproc; j++) {
-			for (int i = 1; i < iproc; i++) {
-				if(myrank!= 0){
-				bufTemp[0] = i; //omg_i
-				bufTemp[1] = j; //omg_j
-				bufTemp[2] = (i-1)*iChunk; //il
-				bufTemp[3] = il + iChunk - 1; // ir
-				bufTemp[4] = (j-1)*jChunk; //jb
-				bufTemp[5] = jb + jChunk - 1; //jt
-				MPI_Send(bufTemp, 6, MPI_INT,sndrank,MPI_ANY_TAG,MPI_COMM_WORLD);
+		for (int j = 1; j < jproc + 1; j++) {
+			for (int i = 1; i < iproc + 1; i++) {
+				if (myrank != 0) {
+					bufTemp[0] = i; //omg_i
+					bufTemp[1] = j; //omg_j
+					if (i != iproc) {
+						bufTemp[2] = (i - 1) * iChunk; //il
+						bufTemp[3] = il + iChunk - 1; // ir
+						lastUsedir = bufTemp[3];
+					} else {
+						bufTemp[2] = lastUsedir ; //il
+						bufTemp[3] = imax ; //il
+					}
+					if (j != jproc) {
+					bufTemp[4] = (j - 1) * jChunk; //jb
+					bufTemp[5] = jb + jChunk - 1; //jt
+					lastUsedjt = bufTemp[5];
+					}
+					else
+					{
+					bufTemp[4] = lastUsedjt; //jb
+					bufTemp[5] = jmax; //jt
+					}
+					MPI_Send(bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
+					MPI_COMM_WORLD);
 				}
 				sndrank++;
 			}
 		}
-		// Assign values for Master Process
-
 	}
 	// End of work for Master Thread
 
@@ -221,10 +235,6 @@ int main(int argn, char** args) {
 	int n1 = 0;
 
 	while (t < t_end) {
-
-		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V); // Adaptive time stepping
-
-		printf("Time Step is %f \n", t);
 
 		boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
 
@@ -254,6 +264,10 @@ int main(int argn, char** args) {
 			n1++;
 			continue;
 		}
+
+		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V); // Adaptive time stepping
+
+		printf("Time Step is %f \n", t);
 
 		t = t + dt;
 
