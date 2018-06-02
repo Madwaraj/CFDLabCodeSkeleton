@@ -174,7 +174,8 @@ int main(int argn, char** args) {
 
 		// Assign values for il, ir, jb, jt
 		sndrank = 0;
-		int bufTemp[6];
+		//int *bufTemp[6];
+		int *bufTemp = malloc(6 * sizeof(int));
 		printf("Temporary Buffer created \n \n");
 		for (int j = 1; j < jproc + 1; j++) {
 			for (int i = 1; i < iproc + 1; i++) {
@@ -197,7 +198,7 @@ int main(int argn, char** args) {
 					bufTemp[5] = jmax; //jt
 				}
 				if (sndrank != 0) {
-					MPI_Send(&bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
+					MPI_Send(bufTemp, 6, MPI_INT, sndrank, 1,
 					MPI_COMM_WORLD);
 				} else { // Assign values for Master Process
 					omg_i = bufTemp[0];
@@ -262,10 +263,16 @@ int main(int argn, char** args) {
 		boundaryvalues(imax, jmax, U, V, il, ir, jb, jt, rank_l, rank_r, rank_b,
 				rank_t); // Assigning Boundary Values
 
+		printf("Boundary values set \n \n");
+
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
 				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
 
+		printf("Fn & Gn Calculated \n \n");
+
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, il, ir, jb, jt); // Computing the right hand side of the Pressure Eqn
+
+		printf("RHS Calculated \n \n");
 
 		int it = 0;
 
@@ -278,8 +285,15 @@ int main(int argn, char** args) {
 			it++;
 		}
 
+		printf("SOR Converged \n \n");
+
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, il, ir, jb, jt); // Computing U, V for the next time-step
+
+		printf("U V for next time step done\n \n");
+
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend, bufRecv, &status, chunk);
+
+		printf("U V values exchanged across boundaries \n \n");
 
 		char output_dir[40];
 		sprintf(output_dir, "Solution/Output_%d", myrank);

@@ -14,12 +14,14 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
     int chunk = 0;
     int locRank;
     double coeff = omg / (2.0 * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
+
+    printf("Inside SOR: Variables defined \n \n");
     
     MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
     
     /* SOR iteration */
-    for (i = il; i <= imax; i++) {
-        for (j = 1; j <= jmax; j++) {
+    for (i = il; i <= ir; i++) {
+        for (j = jb; j <= jt; j++) {
             P[i][j] = (1.0 - omg) * P[i][j]
             + coeff
             * ((P[i + 1][j] + P[i - 1][j]) / (dx * dx)
@@ -27,9 +29,14 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
                - RS[i][j]);
         }
     }
+
+    printf("Inside SOR: SOR Iteration done \n \n");
+
     // Exchange Pressures
     pressure_comm(P, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
                   bufRecv, &status, chunk);
+
+    printf("Inside SOR: Pressures Exchanged \n \n");
     
     /* compute the residual */
     rloc = 0;
@@ -43,10 +50,17 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
                / (dy * dy) - RS[i][j]);
         }
     }
+
+    printf("Inside SOR: Local Residual calculated \n \n");
     
     double glRes;
+
     /*Send local residual sum ain process and set residual*/
+
     MPI_Reduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    printf("Inside SOR: MPI_Reduce called \n \n");
+
     double norm;
     
     if (locRank == 0) {
@@ -55,6 +69,8 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
         MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     *res = norm;
+
+    printf("Inside SOR: Global Residual Norm calculated \n \n");
     
     /* set boundary values */
 

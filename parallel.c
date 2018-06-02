@@ -5,7 +5,7 @@ void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc) {
 	MPI_Comm_rank(MPI_COMM_WORLD, myrank);
 	int bufRcvT[6];
-	MPI_Recv(bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
+	MPI_Recv(&bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
 	MPI_STATUS_IGNORE);
 	*omg_i = bufRcvT[0];
 	*omg_j = bufRcvT[1];
@@ -99,7 +99,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		ctr2++;
 	}
 	ctr2 = 0;
-	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, MPI_ANY_TAG, bufRecv, elCnt,
+	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		for (ctr = lowBound; ctr < upBound + 1; ctr++) {
@@ -230,6 +230,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		rcv_j = &rcvColIdx;
 		rcv_i2 = &ctr;
 		rcv_j2 = &rcvColIdx2;
+		break;
 	case 4:
 		vel1 = &V;
 		vel2 = &U;
@@ -256,7 +257,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		ctr2++;
 	}
 	ctr2 = 0;
-	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, MPI_ANY_TAG, bufRecv, elCnt,
+	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		// Receive 1VelComp values
