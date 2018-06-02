@@ -288,12 +288,12 @@ int main(int argn, char** args) {
 	}
 
 	//Free memory
-	free_matrix(P, 0, imax + 1, 0, jmax + 1);
-	free_matrix(U, 0, imax, 0, jmax + 1);
-	free_matrix(V, 0, imax + 1, 0, jmax);
-	free_matrix(F, 0, imax, 0, jmax + 1);
-	free_matrix(G, 0, imax + 1, 0, jmax);
-	free_matrix(RS, 1, imax, 1, jmax);
+	free_matrix(P, (il - 1), (ir + 1), (jb - 1), (jt + 1));
+	free_matrix(U, (il - 2), (ir + 1), (jb - 1), (jt + 1));
+	free_matrix(V, (il - 1), (ir + 1), (jb - 2), (jt + 1));
+	free_matrix(F, (il - 2), (ir + 1), (jb - 1), (jt + 1));
+	free_matrix(G, (il - 1), (ir + 1), (jb - 2), (jt + 1));
+	free_matrix(RS, il, ir, jb, jt);
 
 	Program_Stop(*message);
 
