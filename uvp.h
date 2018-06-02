@@ -36,7 +36,11 @@ void calculate_fg(
   double **U,
   double **V,
   double **F,
-  double **G
+  double **G,
+                  int jb,
+                  int jt,
+                  int il,
+                  int ir
 );
 
 
@@ -76,7 +80,11 @@ void calculate_dt(
   int imax,
   int jmax,
   double **U,
-  double **V
+  double **V,
+                  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 

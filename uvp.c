@@ -17,16 +17,37 @@ int jmax,
 double **U,
 double **V,
 double **F,
-double **G
+double **G,
+int jb,
+int jt,
+int il,
+int ir
 ){
     double a, b,c,d,du2x2,du2y2,du2dx,duvy,dv2y2,dv2x2,dv2dy,duvx;
-    for (int j=1; j<=jmax;j++){
-        F[0][j]=U[0][j];
+if ( MPI_PROC_NULL == rank_r )
+{
+    for (int j=jb-1; j<=jt+1;j++){
         F[imax][j]=U[imax][j];
     }
-    for (int i=1; i<=imax; i++){
+    }
+    if ( MPI_PROC_NULL == rank_l ){
+        for (int j=jb-1; j<=jt+1;j++){
+            F[0][j] = U[i][0];
+    }
+    }
+if ( MPI_PROC_NULL == rank_b )
+{
+    for (int i=il-1; i<=ir+1; i++){
         G[i][0]=V[i][0];
-        G[i][jmax]=V[i][jmax];
+   //     G[i][jmax]=V[i][jmax];
+    }
+    }
+    if ( MPI_PROC_NULL == rank_t )
+    {
+        for (int i=il-1; i<=ir+1; i++){
+         //   G[i][0]=V[i][0];
+            G[i][jmax]=V[i][jmax];
+        }
     }
     for (int i=1;i<imax;i++){
         for (int j=1;j<=jmax;j++){
@@ -82,23 +103,34 @@ double dy,
 int imax,
 int jmax,
 double **U,
-double **V
+double **V,
+int il,
+int ir,
+int jb,
+int jt
 ){
-    double dt1,dt2,dt3;
+    double dt1,dt2,dt3, Umax, Vmax;
     double U1=fabs(U[1][1]);
     double V1=fabs(V[1][1]);
     
-    for(int c=1 ; c <=imax ; c++ ){
-        for(int d= 1 ; d <=jmax ; d++ ){
+    for(int c=il-2 ; c <=ir+1 ; c++ ){
+        for(int d= jb-1 ; d <=jt+1 ; d++ ){
             if ( fabs(U[c][d]) > fabs(U1) )
                 U1= U[c][d];
+        }
+    }
+    for(int c=il-1 ; c <=ir+1 ; c++ ){
+        for(int d= jb-2 ; d <=jt+1 ; d++ ){
             if ( fabs(V[c][d]) > fabs(V1) )
                 V1 = V[c][d];
         }
     }
+    MPI_REDUCE(&U1, &Umax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_REDUCE(&V1, &Vmax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
     dt1 = 0.5*Re/(1/(dx*dx) + 1/(dy*dy));
-    dt2 = dx/fabs(U1);
-    dt3 = dy/fabs(V1);
+    dt2 = dx/fabs(Umax);
+    dt3 = dy/fabs(Vmax);
     
     *dt = dt1;
     if (dt2 < dt1){
