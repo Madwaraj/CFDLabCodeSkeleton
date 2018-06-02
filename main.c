@@ -103,8 +103,6 @@ int main(int argn, char** args) {
 	int rank_r;
 	int rank_t;
 	int rank_b;
-	double bufSend;
-	double bufRecv;
 	MPI_Status status;
 	int chunk;
 	int iChunk;
@@ -180,20 +178,20 @@ int main(int argn, char** args) {
 				bufTemp[0] = i; //omg_i
 				bufTemp[1] = j; //omg_j
 				if (i != iproc) {
-					bufTemp[2] = (i - 1) * iChunk; //il
-					bufTemp[3] = il + iChunk - 1; // ir
+					bufTemp[2] = ((i - 1) * iChunk) + 1; //il
+					bufTemp[3] = bufTemp[2] + iChunk - 1; // ir
 					lastUsedir = bufTemp[3];
 				} else {
 					bufTemp[2] = lastUsedir + 1; //il
-					bufTemp[3] = imax - 1; //il
+					bufTemp[3] = imax; //il
 				}
 				if (j != jproc) {
-					bufTemp[4] = (j - 1) * jChunk; //jb
-					bufTemp[5] = jb + jChunk - 1; //jt
+					bufTemp[4] = ((j - 1) * jChunk) + 1; //jb
+					bufTemp[5] = bufTemp[4] + jChunk - 1; //jt
 					lastUsedjt = bufTemp[5];
 				} else {
 					bufTemp[4] = lastUsedjt + 1; //jb
-					bufTemp[5] = jmax - 1; //jt
+					bufTemp[5] = jmax; //jt
 				}
 				if (sndrank != 0) {
 					MPI_Send(bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
@@ -229,8 +227,13 @@ int main(int argn, char** args) {
 	else {
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
-
 	}
+
+	int maxBuf;
+	maxBuf = max((ir - il + 1), (jt - jb + 1));
+
+	double *bufSend = malloc(maxBuf * sizeof(double));
+	double *bufRecv = malloc(maxBuf * sizeof(double));
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
 	double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
@@ -247,26 +250,28 @@ int main(int argn, char** args) {
 
 	while (t < t_end) {
 
-		boundaryvalues(imax, jmax, U, V); // Assigning Boundary Values
+		boundaryvalues(imax, jmax, U, V, il, ir, jb, jt, rank_l, rank_r, rank_b,
+				rank_t); // Assigning Boundary Values
 
-		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G); // Computing Fn and Gn
+		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
+				ir, jb, jt); // Computing Fn and Gn
 
-		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS); // Computing the right hand side of the Pressure Eqn
+		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, il, ir, jb, jt); // Computing the right hand side of the Pressure Eqn
 
 		int it = 0;
 
 		double res = 1.0; // Residual for the SOR
 
 		while (it < itermax && res > eps) {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res); // Successive over-realaxation to solve the Pressure Eqn
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, rank_l,
+					rank_r, rank_b, rank_t, &bufSend, &bufRecv); // Successive over-realaxation to solve the Pressure Eqn
 			// Exchange Pressure values
-			pressure_comm(P, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t,
-					bufSend, bufRecv, status, chunk);
 			it++;
-
 		}
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computing U, V for the next time-step
+		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, &bufSend, &bufRecv, status, chunk);
+
 		char output_dir[40];
 		sprintf(output_dir, "Solution/Output_%s", myrank);
 		if (t >= n1 * dt_value) {

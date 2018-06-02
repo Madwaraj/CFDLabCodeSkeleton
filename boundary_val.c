@@ -1,7 +1,8 @@
 #include "boundary_val.h"
 #include <stdio.h>
+#include "mpi.h"
 
-void boundaryvalues(int imax,int jmax,double** U,double** V, int il, int ir, int jb, int jt){
+void boundaryvalues(int imax,int jmax,double** U,double** V, int il, int ir, int jb, int jt, int rank_l, int rank_r, int rank_b, int rank_t){
     if ( MPI_PROC_NULL == rank_r )
     {
         for (int j=jb-1; j<=jt+1;j++){
