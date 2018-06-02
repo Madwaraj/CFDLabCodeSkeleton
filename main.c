@@ -87,9 +87,9 @@ int main(int argn, char** args) {
 	double GX; /* gravitation x-direction */
 	double GY; /* gravitation y-direction */
 
-	int data;
+	//int data;
 
-	char message = 'X';
+	char *message = "X";
 
 	// MPI data
 	int myrank;
@@ -104,7 +104,7 @@ int main(int argn, char** args) {
 	int rank_t;
 	int rank_b;
 	MPI_Status status;
-	int chunk;
+	int chunk = 0;
 	int iChunk;
 	int jChunk;
 	int lastUsedir;
@@ -114,9 +114,11 @@ int main(int argn, char** args) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
 	// Extracting parameter values from data file and assigning them to variables
-	data = read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end,
+	read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end,
 			&xlength, &ylength, &dt, &dx, &dy, &imax, &jmax, &alpha, &omg, &tau,
 			&itermax, &eps, &dt_value, &iproc, &jproc);
+
+	printf("Parameters Extracted \n \n");
 
 	if (myrank == 0) {
 		mkdir("Solution", 0777);
@@ -137,7 +139,7 @@ int main(int argn, char** args) {
 				}
 			} else {
 				printf("\n Invalid Domain Size, Exiting!!");
-				break;
+				//break;
 			}
 		}
 		/*	// Broadcasting data to all processes
@@ -173,6 +175,7 @@ int main(int argn, char** args) {
 		// Assign values for il, ir, jb, jt
 		sndrank = 0;
 		int bufTemp[6];
+		printf("Temporary Buffer created \n \n");
 		for (int j = 1; j < jproc + 1; j++) {
 			for (int i = 1; i < iproc + 1; i++) {
 				bufTemp[0] = i; //omg_i
@@ -194,7 +197,7 @@ int main(int argn, char** args) {
 					bufTemp[5] = jmax; //jt
 				}
 				if (sndrank != 0) {
-					MPI_Send(bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
+					MPI_Send(&bufTemp, 6, MPI_INT, sndrank, MPI_ANY_TAG,
 					MPI_COMM_WORLD);
 				} else { // Assign values for Master Process
 					omg_i = bufTemp[0];
@@ -207,6 +210,8 @@ int main(int argn, char** args) {
 				sndrank++;
 			}
 		}
+
+		printf("Boundaries of sub-domains assigned \n \n");
 
 		//Assign Neighbours for Master Process
 		rank_l = MPI_PROC_NULL;
@@ -229,6 +234,8 @@ int main(int argn, char** args) {
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
 
+	printf("Parallel Processes initialized \n \n");
+
 	int maxBuf;
 	maxBuf = max((ir - il + 1), (jt - jb + 1));
 
@@ -244,7 +251,9 @@ int main(int argn, char** args) {
 	double **RS = matrix(il, ir, jb, jt);
 
 	//Initialize U, V and P
-	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
+	init_uvp(UI, VI, PI, U, V, P, il, ir, jb, jt);
+
+	printf("U V P Initialized \n \n");
 
 	int n1 = 0;
 
@@ -254,7 +263,7 @@ int main(int argn, char** args) {
 				rank_t); // Assigning Boundary Values
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
-				ir, jb, jt); // Computing Fn and Gn
+				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
 
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, il, ir, jb, jt); // Computing the right hand side of the Pressure Eqn
 
@@ -264,16 +273,16 @@ int main(int argn, char** args) {
 
 		while (it < itermax && res > eps) {
 			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, rank_l,
-					rank_r, rank_b, rank_t, &bufSend, &bufRecv); // Successive over-realaxation to solve the Pressure Eqn
+					rank_r, rank_b, rank_t, bufSend, bufRecv); // Successive over-realaxation to solve the Pressure Eqn
 			// Exchange Pressure values
 			it++;
 		}
 
-		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P); // Computing U, V for the next time-step
-		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, &bufSend, &bufRecv, status, chunk);
+		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, il, ir, jb, jt); // Computing U, V for the next time-step
+		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend, bufRecv, &status, chunk);
 
 		char output_dir[40];
-		sprintf(output_dir, "Solution/Output_%s", myrank);
+		sprintf(output_dir, "Solution/Output_%d", myrank);
 		if (t >= n1 * dt_value) {
 			write_vtkFile(output_dir, n, xlength, ylength, imax, jmax, dx, dy,
 					U, V, P);
@@ -295,7 +304,7 @@ int main(int argn, char** args) {
 	free_matrix(G, (il - 1), (ir + 1), (jb - 2), (jt + 1));
 	free_matrix(RS, il, ir, jb, jt);
 
-	Program_Stop(*message);
+	Programm_Stop(message);
 
 	return -1;
 }
