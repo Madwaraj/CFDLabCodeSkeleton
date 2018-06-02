@@ -1,6 +1,7 @@
 #ifndef __UVP_H__
 #define __UVP_H__
 
+
 /**
  * Determines the value of U and G according to the formula
  *
@@ -22,10 +23,6 @@
  * @f$ i=1,\ldots,imax, \quad j=1,\ldots,jmax-1 @f$
  *
  */
- 
-double three_min(double a, double b, double c);
- 
- 
 void calculate_fg(
   double Re,
   double GX,
@@ -40,10 +37,10 @@ void calculate_fg(
   double **V,
   double **F,
   double **G,
-  int **flag,
-  double beta,
-  double **T,
-  int include_T
+                  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 
@@ -63,7 +60,10 @@ void calculate_rs(
   double **F,
   double **G,
   double **RS,
-  int **flag
+                  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 
@@ -85,8 +85,10 @@ void calculate_dt(
   int jmax,
   double **U,
   double **V,
-  double Pr,
-  int include_T
+                  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 
@@ -114,18 +116,10 @@ void calculate_uv(
   double **F,
   double **G,
   double **P,
-  int **flag
+                  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
-void calculate_temp(double **T, double **T1, double Pr, double Re, int imax,int jmax,double dx, double dy,double dt, double alpha,double **U,double **V,int **flag, double TI, double T_h, double T_c, int select);
-
-
-
-void normal_boundary(double **U, double **V, double **P, int **flag, int imax, int jmax);
-
-
-
-void normal_boundary_T(double **U, double **V, double **P, double **T, int **flag, int imax, int jmax);
-
 #endif
-
