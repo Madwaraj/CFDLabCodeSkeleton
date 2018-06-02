@@ -61,8 +61,8 @@ int *iproc, int *jproc)
 	READ_DOUBLE(szFileName, *GY);
 	READ_DOUBLE(szFileName, *PI);
 
-	READ_DOUBLE(szFileName, *iproc);
-	READ_DOUBLE(szFileName, *jproc);
+	READ_INT(szFileName, *iproc);
+	READ_INT(szFileName, *jproc);
 
 	*dx = *xlength / (double) (*imax);
 	*dy = *ylength / (double) (*jmax);

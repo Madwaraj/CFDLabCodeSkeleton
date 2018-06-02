@@ -37,10 +37,11 @@ void calculate_fg(
   double **V,
   double **F,
   double **G,
+                  int il,
+                  int ir,
                   int jb,
                   int jt,
-                  int il,
-                  int ir
+int rank_l, int rank_r, int rank_b, int rank_t
 );
 
 
@@ -59,7 +60,11 @@ void calculate_rs(
   int jmax,
   double **F,
   double **G,
-  double **RS
+  double **RS,
+  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 
@@ -84,7 +89,10 @@ void calculate_dt(
                   int il,
                   int ir,
                   int jb,
-                  int jt
+                  int jt,
+int rank_l, int rank_r, int rank_b, int rank_t
+
+
 );
 
 
@@ -111,7 +119,11 @@ void calculate_uv(
   double **V,
   double **F,
   double **G,
-  double **P
+  double **P,
+  int il,
+                  int ir,
+                  int jb,
+                  int jt
 );
 
 #endif

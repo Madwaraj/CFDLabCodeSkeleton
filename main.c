@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <mpi.h>
-#include <parallel.h>
+#include "parallel.h"
 #include <math.h>
 
 /**

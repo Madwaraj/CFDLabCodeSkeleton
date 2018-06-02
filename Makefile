@@ -1,9 +1,10 @@
-CC = gcc
+CC = mpicc
 CFLAGS = -Wall -pedantic -Werror
 .c.o:  ; $(CC) -c $(CFLAGS) $<
 
 OBJ = 	helper.o\
       	init.o\
+	parallel.o\
         sor.o\
       	boundary_val.o\
       	uvp.o\
@@ -21,7 +22,8 @@ clean:
 	rm $(OBJ)
 
 helper.o      : helper.h 
-init.o        : helper.h init.h 
+init.o        : helper.h init.h
+parallel.o    : parallel.h 
 boundary_val.o: helper.h boundary_val.h 
 uvp.o         : helper.h uvp.h
 visual.o      : helper.h

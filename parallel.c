@@ -3,7 +3,7 @@
 void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
 		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc) {
-	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	MPI_Comm_rank(MPI_COMM_WORLD, myrank);
 	int bufRcvT[6];
 	MPI_Recv(bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
 	MPI_STATUS_IGNORE);
@@ -17,14 +17,14 @@ void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 //Assign the Neighbours
 	if (iproc > 1) { //If there are divisions in the horizontal direction
 		//Left Neighbour
-		if (omg_i > 1) {
-			*rank_l = myrank - 1;
+		if (*omg_i > 1) {
+			*rank_l = *myrank - 1;
 		} else {
 			*rank_l = MPI_PROC_NULL;
 		}
 		//Right Neighbour
-		if (omg_i < iproc) {
-			*rank_r = myrank + 1;
+		if (*omg_i < iproc) {
+			*rank_r = *myrank + 1;
 		} else {
 			*rank_r = MPI_PROC_NULL;
 		}
@@ -34,14 +34,14 @@ void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 	}
 	if (jproc > 1) { //Ensures there are divisions in the vertical direction
 		//Bottom Neighbour
-		if (omg_j > 1) {
-			*rank_b = myrank - iproc;
+		if (*omg_j > 1) {
+			*rank_b = *myrank - iproc;
 		} else {
 			*rank_b = MPI_PROC_NULL;
 		}
 		//Top Neighbour
-		if (omg_i < jproc) {
-			*rank_t = myrank + iproc;
+		if (*omg_i < jproc) {
+			*rank_t = *myrank + iproc;
 		} else {
 			*rank_t = MPI_PROC_NULL;
 		}
@@ -65,13 +65,28 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 */
 
 	switch (opDirn) {
-	case 1 || 2:
+	case 1:
 		sndP_i = &sndColIdx;
 		sndP_j = &ctr;
 		rcvP_i = &rcvColIdx;
 		rcvP_j = &ctr;
 		break;
-	case 3 || 4:
+
+	case 2:
+		sndP_i = &sndColIdx;
+		sndP_j = &ctr;
+		rcvP_i = &rcvColIdx;
+		rcvP_j = &ctr;
+		break;
+
+	case 3:
+		sndP_i = &ctr;
+		sndP_j = &sndColIdx;
+		rcvP_i = &ctr;
+		rcvP_j = &rcvColIdx;
+		break;
+
+	case 4:
 		sndP_i = &ctr;
 		sndP_j = &sndColIdx;
 		rcvP_i = &ctr;
@@ -180,7 +195,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 	 */
 
 	switch (opDirn) {
-	case 1 || 2:
+	case 1:
 		vel1 = &U;
 		vel2 = &V;
 		snd_i = &sndColIdx;
@@ -192,7 +207,30 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		rcv_i2 = &rcvColIdx2;
 		rcv_j2 = &ctr;
 		break;
-	case 3 || 4:
+	case 2:
+		vel1 = &U;
+		vel2 = &V;
+		snd_i = &sndColIdx;
+		snd_j = &ctr;
+		snd_i2 = &sndColIdx2;
+		snd_j2 = &ctr;
+		rcv_i = &rcvColIdx;
+		rcv_j = &ctr;
+		rcv_i2 = &rcvColIdx2;
+		rcv_j2 = &ctr;
+		break;
+	case 3:
+		vel1 = &V;
+		vel2 = &U;
+		snd_i = &ctr;
+		snd_j = &sndColIdx;
+		snd_i2 = &ctr;
+		snd_j2 = &sndColIdx2;
+		rcv_i = &ctr;
+		rcv_j = &rcvColIdx;
+		rcv_i2 = &ctr;
+		rcv_j2 = &rcvColIdx2;
+	case 4:
 		vel1 = &V;
 		vel2 = &U;
 		snd_i = &ctr;
@@ -237,7 +275,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
 		int rank_r, int rank_b, int rank_t, double *bufSend, double *bufRecv,
 		MPI_Status *status, int chunk) {
-	int i, iBufTotal, jBufTotal, ctr = 0;
+	int iBufTotal, jBufTotal;
 
 	iBufTotal = 3 * ((jt - jb) + 1); //Total size of buffer, i passing direction
 	jBufTotal = 3 * ((ir - il) + 1); //Total size of buffer, j passing direction

@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include <stdio.h>
-#include  "mpi.h"
+#include <mpi.h>
 
 void calculate_fg(double Re, double GX, double GY, double alpha, double dt,
 		double dx, double dy, int imax, int jmax, double **U, double **V,
@@ -114,8 +114,8 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
 				V1 = V[c][d];
 		}
 	}
-	MPI_REDUCE(&U1, &Umax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-	MPI_REDUCE(&V1, &Vmax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&U1, &Umax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&V1, &Vmax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
 	if (myrank==0) {
 
@@ -139,14 +139,14 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
 }
 
 void calculate_uv(double dt, double dx, double dy, int imax, int jmax,
-		double **U, double **V, double **F, double **G, double **P) {
-	for (int i = 1; i < imax; i++) {
-		for (int j = 1; j <= jmax; j++) {
+		double **U, double **V, double **F, double **G, double **P, int il, int ir, int jb, int jt) {
+	for (int i = il - 2; i <= ir + 1; i++) {
+		for (int j = jb + 1; j <= jt + 1; j++) {
 			U[i][j] = F[i][j] - dt * (P[i + 1][j] - P[i][j]) / dx;
 		}
 	}
-	for (int i = 1; i <= imax; i++) {
-		for (int j = 1; j < jmax; j++) {
+	for (int i = il - 1; i <= ir + 1; i++) {
+		for (int j = jb - 2; j <= jt + 1; j++) {
 			V[i][j] = G[i][j] - dt * (P[i][j + 1] - P[i][j]) / dy;
 		}
 	}

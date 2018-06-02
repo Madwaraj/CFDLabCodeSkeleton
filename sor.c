@@ -1,6 +1,7 @@
 #include "sor.h"
 #include <math.h>
-#include "mpi.h"
+#include <mpi.h>
+#include "parallel.h"
 
 void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
          double **RS, double *res, int il, int ir, int jb, int jt, int rank_l,
@@ -9,7 +10,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
          ) {
     int i, j;
     double rloc;
-    MPI_Status *status;
+    MPI_Status status;
     int chunk = 0;
     int locRank;
     double coeff = omg / (2.0 * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
@@ -28,7 +29,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
     }
     // Exchange Pressures
     pressure_comm(P, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
-                  bufRecv, status, chunk);
+                  bufRecv, &status, chunk);
     
     /* compute the residual */
     rloc = 0;
@@ -56,16 +57,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
     *res = norm;
     
     /* set boundary values */
-    
-    for (i = il; i < ir+2; i++) {
-        P[i][0] = P[i][1];
-        P[i][jt + 1] = P[i][jt];
-    }
-    for (j = jb; j < jt+2; j++) {
-        P[0][j] = P[1][j];
-        P[ir + 1][j] = P[ir][j];
-    }
-}
+
 
 if ( MPI_PROC_NULL == rank_r )
 {
@@ -91,4 +83,5 @@ if ( MPI_PROC_NULL == rank_t )
         //   G[i][0]=V[i][0];
         P[i][jt+1]=P[i][jt];
     }
+}
 }
