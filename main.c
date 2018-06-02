@@ -121,7 +121,7 @@ int main(int argn, char** args) {
 			&itermax, &eps, &dt_value, &iproc, &jproc);
 
 	if (myrank == 0) {
-		mkdir("Output", 0777);
+		mkdir("Solution", 0777);
 		// Segregating the large domain into smaller sub-domains based on number of processes
 		if (iproc == 0 && jproc == 0) {
 			if (num_proc % 2 == 0) {
