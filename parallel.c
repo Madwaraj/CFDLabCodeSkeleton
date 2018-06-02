@@ -45,7 +45,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	ctr2 = 0;
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, MPI_ANY_TAG, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-	if (status->MPI_SOURCE != MPI_NO_OP) {
+	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		for (ctr = lowBound; ctr < upBound + 1; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
 			ctr2++;
@@ -179,7 +179,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 	ctr2 = 0;
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, MPI_ANY_TAG, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-	if (status->MPI_SOURCE != MPI_NO_OP) {
+	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		// Receive 1VelComp values
 		for (ctr = lowBound; ctr < upBound; ctr++) {
 			(*vel1)[(*rcv_i)][(*rcv_j)] = bufRecv[ctr2];
