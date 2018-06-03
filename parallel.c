@@ -4,69 +4,81 @@ void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
 		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc) {
 	//MPI_Comm_rank(MPI_COMM_WORLD, myrank);
-	printf("P%d\t Init_Parallel \n \n",*myrank);
+	printf("P%d\t Init_Parallel \n \n", *myrank);
 	int bufRcvT[6];
-	printf("P%d\t Init_Parallel: Enter Recv\n \n",*myrank);
+	printf("P%d\t Init_Parallel: Enter Recv\n \n", *myrank);
 	MPI_Recv(bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
 	MPI_STATUS_IGNORE);
-	printf("P%d\t Init_Parallel: Finished Recv\n \n",*myrank);
+	printf("P%d\t Init_Parallel: Finished Recv\n \n", *myrank);
 	*omg_i = bufRcvT[0];
-	printf("P%d\t Init_Parallel: Assigned omg_i=%d\n \n",*myrank, *omg_i);
+	printf("P%d\t Init_Parallel: Assigned omg_i=%d\n \n", *myrank, *omg_i);
 	*omg_j = bufRcvT[1];
-	printf("P%d\t Init_Parallel: Assigned omg_j=%d\n \n",*myrank, *omg_j);
+	printf("P%d\t Init_Parallel: Assigned omg_j=%d\n \n", *myrank, *omg_j);
 	*il = bufRcvT[2];
-	printf("P%d\t Init_Parallel: Assigned il=%d\n \n",*myrank, *il);
+	printf("P%d\t Init_Parallel: Assigned il=%d\n \n", *myrank, *il);
 	*ir = bufRcvT[3];
-	printf("P%d\t Init_Parallel: Assigned ir=%d\n \n",*myrank, *ir);
+	printf("P%d\t Init_Parallel: Assigned ir=%d\n \n", *myrank, *ir);
 	*jb = bufRcvT[4];
-	printf("P%d\t Init_Parallel: Assigned jb=%d\n \n",*myrank, *jb);
+	printf("P%d\t Init_Parallel: Assigned jb=%d\n \n", *myrank, *jb);
 	*jt = bufRcvT[5];
-	printf("P%d\t Init_Parallel: Assigned jt=%d\n \n",*myrank, *jt);
+	printf("P%d\t Init_Parallel: Assigned jt=%d\n \n", *myrank, *jt);
 
 //Assign the Neighbours
 	if (iproc > 1) { //If there are divisions in the horizontal direction
 		//Left Neighbour
 		if (*omg_i > 1) {
 			*rank_l = *myrank - 1;
-	printf("P%d\t Init_Parallel: Assigned rank_l=%d\n \n",*myrank,*rank_l);
+			printf("P%d\t Init_Parallel: Assigned rank_l=%d\n \n", *myrank,
+					*rank_l);
 		} else {
 			*rank_l = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_l=%d NULL\n \n",*myrank,*rank_l);
+			printf("P%d\t Init_Parallel: Assigned rank_l=%d NULL\n \n", *myrank,
+					*rank_l);
 		}
 		//Right Neighbour
 		if (*omg_i < iproc) {
 			*rank_r = *myrank + 1;
-	printf("P%d\t Init_Parallel: Assigned rank_r=%d\n \n",*myrank,*rank_r);
+			printf("P%d\t Init_Parallel: Assigned rank_r=%d\n \n", *myrank,
+					*rank_r);
 		} else {
 			*rank_r = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_r=%d NULL\n \n",*myrank,*rank_r);
+			printf("P%d\t Init_Parallel: Assigned rank_r=%d NULL\n \n", *myrank,
+					*rank_r);
 		}
 	} else { // If there are no horizontal divisions
 		*rank_r = MPI_PROC_NULL;
 		*rank_l = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_l=%d NULL rank_r=%d NULL\n \n",*myrank,*rank_l,*rank_r);
+		printf(
+				"P%d\t Init_Parallel: Assigned rank_l=%d NULL rank_r=%d NULL\n \n",
+				*myrank, *rank_l, *rank_r);
 	}
 	if (jproc > 1) { //Ensures there are divisions in the vertical direction
 		//Bottom Neighbour
 		if (*omg_j > 1) {
 			*rank_b = *myrank - iproc;
-	printf("P%d\t Init_Parallel: Assigned rank_b=%d\n \n",*myrank,*rank_b);
+			printf("P%d\t Init_Parallel: Assigned rank_b=%d\n \n", *myrank,
+					*rank_b);
 		} else {
 			*rank_b = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_b=%d NULL\n \n",*myrank,*rank_b);
+			printf("P%d\t Init_Parallel: Assigned rank_b=%d NULL\n \n", *myrank,
+					*rank_b);
 		}
 		//Top Neighbour
 		if (*omg_j < jproc) {
 			*rank_t = *myrank + iproc;
-	printf("P%d\t Init_Parallel: Assigned rank_t=%d\n \n",*myrank,*rank_t);
+			printf("P%d\t Init_Parallel: Assigned rank_t=%d\n \n", *myrank,
+					*rank_t);
 		} else {
 			*rank_t = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_t=%d NULL\n \n",*myrank,*rank_t);
+			printf("P%d\t Init_Parallel: Assigned rank_t=%d NULL\n \n", *myrank,
+					*rank_t);
 		}
 	} else { // If there are no vertical divisions
 		*rank_b = MPI_PROC_NULL;
 		*rank_t = MPI_PROC_NULL;
-	printf("P%d\t Init_Parallel: Assigned rank_b=%d NULL rank_t=%d NULL\n \n",*myrank,*rank_b,*rank_t);
+		printf(
+				"P%d\t Init_Parallel: Assigned rank_b=%d NULL rank_t=%d NULL\n \n",
+				*myrank, *rank_b, *rank_t);
 	}
 }
 
@@ -74,7 +86,8 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		int sndID, int sndColIdx, double *bufSend, int rcvID, int rcvColIdx,
 		double *bufRecv, int elCnt, MPI_Status *status) {
 	int *sndP_i, *sndP_j, *rcvP_i, *rcvP_j;
-	int ctr, ctr2 = 0; int locRank;
+	int ctr, ctr2 = 0;
+	int locRank;
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
 
@@ -84,7 +97,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 *opDirn=3 => //Send to Bottom Neighbour, Receive from Top Neighbour
 	 *opDirn=4 => //Send to Top Neighbour, Receive from Bottom Neighbour
 	 */
-        printf("P%d\t Entered SndRcv\n", locRank);
+	printf("P%d\t Entered SndRcv\n", locRank);
 	switch (opDirn) {
 	case 1:
 		sndP_i = &sndColIdx;
@@ -114,17 +127,18 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		rcvP_j = &rcvColIdx;
 		break;
 	}
-       printf("P%d\t Checked for the cases\n", locRank);
+	printf("P%d\t Checked for the cases\n", locRank);
 	for (ctr = lowBound; ctr < upBound + 1; ctr++) {
 		bufSend[ctr2] = P[(*sndP_i)][(*sndP_j)];
 		ctr2++;
 	}
-         printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank,ctr, lowBound, upBound);
+	printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank, ctr,
+			lowBound, upBound);
 	ctr2 = 0;
-        printf("P%d\t About to Sendrecv\n", locRank);
+	printf("P%d\t About to Sendrecv\n", locRank);
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-        printf("P%d\t About to exit SndRcv\n", locRank);
+	printf("P%d\t About to exit SndRcv\n", locRank);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		for (ctr = lowBound; ctr < upBound + 1; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
@@ -136,22 +150,22 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 		int rank_r, int rank_b, int rank_t, double *bufSend, double *bufRecv,
 		MPI_Status *status, int chunk) {
-	int iBdry_cnt = jt - jb + 1; //Number of elements on a left or right facing boundary
-	int jBdry_cnt = ir - il + 1; //Number of elements on a top or bottom facing boundary
-       printf("Ilow = %d\t %d \t %d\t %d\t %d\t %d\n",il,ir,jb,jt,iBdry_cnt, jBdry_cnt);
-   printf("Entering SndRcv 3rd time\n");
-	pressure_MPI_SndRcv(P, 3, il, ir, rank_b, jb, bufSend, rank_t, (jt + 1),
-			bufRecv, jBdry_cnt, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-       printf("Entering SndRcv 4th time\n");
-	pressure_MPI_SndRcv(P, 4, il, ir, rank_t, jt, bufSend, rank_b, (jb - 1),
-			bufRecv, jBdry_cnt, status); //Send to Top Neighbour, Receive from Neighbour Bottom
-       printf("Entering SndRcv 1st time\n");
-	pressure_MPI_SndRcv(P, 1, jb, jt, rank_l, il, bufSend, rank_r, (ir + 1),
-			bufRecv, iBdry_cnt, status); //Send to Left Neighbour, Receive from Right Neighbour
-       printf("Entering SndRcv 2nd time\n");
-	pressure_MPI_SndRcv(P, 2, jb, jt, rank_r, ir, bufSend, rank_l, (il - 1),
-			bufRecv, iBdry_cnt, status); //Send to Right Neighbour, Receive from Left Neighbour
-    
+	int iMax = ir - il + 2; //Number of elements on a top or bottom facing boundary
+	int jMax = jt - jb + 2; //Number of elements on a left or right facing boundary
+	printf("Ilow = %d\t %d \t %d\t %d\t %d\t %d\n", il, ir, jb, jt, jMax,
+			iMax);
+	printf("Entering SndRcv 1st time\n");
+	pressure_MPI_SndRcv(P, 1, 0, jMax, rank_l, 1, bufSend, rank_r, iMax,
+			bufRecv, jMax, status); //Send to Left Neighbour, Receive from Right Neighbour
+	printf("Entering SndRcv 2nd time\n");
+	pressure_MPI_SndRcv(P, 2, 0, jMax, rank_r, (iMax-1), bufSend, rank_l, 0,
+			bufRecv, jMax, status); //Send to Right Neighbour, Receive from Left Neighbour
+	printf("Entering SndRcv 3rd time\n");
+	pressure_MPI_SndRcv(P, 3, 0, iMax, rank_b, 1, bufSend, rank_t, jMax,
+			bufRecv, iMax, status); //Send to Bottom Neighbour, Receive from Top Neighbour
+	printf("Entering SndRcv 4th time\n");
+	pressure_MPI_SndRcv(P, 4, 0, iMax, rank_t, (jMax-1), bufSend, rank_b, 0,
+			bufRecv, iMax, status); //Send to Top Neighbour, Receive from Neighbour Bottom
 
 	/*
 	 * //Old Approach
@@ -286,8 +300,8 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		ctr2++;
 	}
 	ctr2 = 0;
-      printf("Inside Sndrcv\n");
-      printf("L=%d\t %d", lowBound2,upBound2);
+	printf("Inside Sndrcv\n");
+	printf("L=%d\t %d", lowBound2, upBound2);
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
@@ -312,18 +326,19 @@ void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
 	iBufTotal = 3 * ((jt - jb) + 1); //Total size of buffer, i passing direction
 	jBufTotal = 3 * ((ir - il) + 1); //Total size of buffer, j passing direction
 
-       uv_MPI_SndRcv(U, V, 3, il, (ir + 1), (il - 1), (ir + 1), rank_b, jb, jb,
+	uv_MPI_SndRcv(U, V, 3, il, (ir + 1), (il - 1), (ir + 1), rank_b, jb, jb,
 			bufSend, rank_t, (jt + 1), (jt + 1), bufRecv, jBufTotal, status); //Send to Bottom Neighbour, Receive from Top Neighbour
 	uv_MPI_SndRcv(U, V, 4, il, (ir + 1), (il - 1), (ir + 1), rank_t, (jt - 1),
-			jt, bufSend, rank_b, (jb - 2), (jb - 1), bufRecv, jBufTotal,status);
+			jt, bufSend, rank_b, (jb - 2), (jb - 1), bufRecv, jBufTotal,
+			status);
 	uv_MPI_SndRcv(U, V, 1, jb, (jt + 1), (jb - 1), (jt + 1), rank_l, il, il,
 			bufSend, rank_r, (ir + 1), (ir + 1), bufRecv, iBufTotal, status); //Send to Left Neighbour, Receive from Right Neighbour
-        printf("Entering sndrcv\n");
+	printf("Entering sndrcv\n");
 	uv_MPI_SndRcv(U, V, 2, jb, (jt + 1), (jb - 1), (jt + 1), rank_r, (ir - 1),
 			ir, bufSend, rank_l, (il - 2), (il - 1), bufRecv, iBufTotal,
 			status); //Send to Right Neighbour, Receive from Left Neighbour
-	
-			 //Send to Top Neighbour, Receive from Bottom Neighbour
+
+	//Send to Top Neighbour, Receive from Bottom Neighbour
 
 	/* //Old Approach
 

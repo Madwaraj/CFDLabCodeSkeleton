@@ -204,7 +204,7 @@ int main(int argn, char** args) {
 	}
 	// End of work for Master Thread
 
-	else {
+	else {// Only Slave Threads
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
@@ -219,20 +219,20 @@ int main(int argn, char** args) {
 	double *bufRecv = malloc(maxBuf * sizeof(double));
 	printf("P%d\t Main: bufRecv initialized \n \n", myrank);
 
-	int iUpBoundUF = (ir+1)-(il-2);
-	int jUpBoundUF = (jt+1)-(jb-1);
-	int iUpBoundVG = (ir+1)-(il-1);
-	int jUpBoundVG = (jb+1)-(jt-2);
-	int iUpboundRS = ir-il+1;
-	int jUpboundRS = jt-jb+1;
+	int iMaxUF = (ir+1)-(il-2)+1;
+	int jMaxUF = (jt+1)-(jb-1)+1;
+	int iMaxVG = (ir+1)-(il-1)+1;
+	int jMaxVG = (jb+1)-(jt-2)+1;
+	int iMaxRS = ir-il+2;
+	int jMaxRS = jt-jb+2;
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
-	double **P = matrix(0, iUpBoundVG, 0, jUpBoundUF);
-	double **U = matrix(0, iUpBoundUF, 0, jUpBoundUF);
-	double **V = matrix(0, iUpBoundVG, 0, jUpBoundVG);
-	double **F = matrix(0, iUpBoundUF, 0, jUpBoundUF);
-	double **G = matrix(0, iUpBoundVG, 0, jUpBoundVG);
-	double **RS = matrix(0, iUpboundRS, 0, jUpboundRS);
+	double **P = matrix(0, iMaxVG, 0, jMaxUF);
+	double **U = matrix(0, iMaxUF, 0, jMaxUF);
+	double **V = matrix(0, iMaxVG, 0, jMaxVG);
+	double **F = matrix(0, iMaxUF, 0, jMaxUF);
+	double **G = matrix(0, iMaxVG, 0, jMaxVG);
+	double **RS = matrix(0, iMaxRS, 0, jMaxRS);
 	printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
@@ -246,7 +246,7 @@ int main(int argn, char** args) {
 
 
 	//Initialize U, V and P
-	init_uvp(UI, VI, PI, U, V, P, il, ir, jb, jt);
+	init_uvp(UI, VI, PI, U, V, P, iMaxUF, jMaxUF, iMaxVG, jMaxVG);
 
 	printf("P%d\t U V P Initialized \n \n", myrank);
 
@@ -254,10 +254,10 @@ int main(int argn, char** args) {
 
 	while (t < t_end) {
 
-		boundaryvalues(imax, jmax, U, V, il, ir, jb, jt, rank_l, rank_r, rank_b,
-				rank_t); // Assigning Boundary Values
+		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b,
+				rank_t); // Assigning Domain Boundary Values
 
-		printf("P%d\t Boundary values set \n \n", myrank);
+		printf("P%d\t Domain Boundary values set \n \n", myrank);
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
 				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
@@ -306,12 +306,12 @@ int main(int argn, char** args) {
 	}
 
 	//Free memory
-	free_matrix(P, (il - 1), (ir + 1), (jb - 1), (jt + 1));
-	free_matrix(U, (il - 2), (ir + 1), (jb - 1), (jt + 1));
-	free_matrix(V, (il - 1), (ir + 1), (jb - 2), (jt + 1));
-	free_matrix(F, (il - 2), (ir + 1), (jb - 1), (jt + 1));
-	free_matrix(G, (il - 1), (ir + 1), (jb - 2), (jt + 1));
-	free_matrix(RS, il, ir, jb, jt);
+	free_matrix(P, 0, iMaxVG, 0, jMaxUF);
+	free_matrix(U, 0, iMaxUF, 0, jMaxUF);
+	free_matrix(V, 0, iMaxVG, 0, jMaxVG);
+	free_matrix(F, 0, iMaxUF, 0, jMaxUF);
+	free_matrix(G, 0, iMaxVG, 0, jMaxVG);
+	free_matrix(RS,0, iMaxRS, 0, jMaxRS);
 
 	Programm_Stop(message);
 

@@ -2,13 +2,13 @@
 #include "init.h"
 
 void init_uvp(double UI, double VI, double PI, double **U,
-		double **V, double **P, int il, int ir, int jb, int jt) {
+		double **V, double **P, int iUpBoundUF, int jUpBoundUF, int iUpBoundVG, int jUpBoundVG) {
 
-	init_matrix(U, (il-2), (ir+1), (jb-1), (jt + 1), UI);
+	init_matrix(U, 0, iUpBoundUF, 0, jUpBoundUF, UI);
 
-	init_matrix(V, (il-1), (ir+1), (jb-2), (jt + 1), VI);
+	init_matrix(V, 0, iUpBoundVG, 0, jUpBoundVG, VI);
 
-	init_matrix(P, (il-1), (ir+1), (jb-1), (jt + 1), PI);
+	init_matrix(P, 0, iUpBoundVG, 0, jUpBoundUF, PI);
 
 }
 
