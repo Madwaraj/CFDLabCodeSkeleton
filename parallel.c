@@ -3,51 +3,70 @@
 void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
 		int *rank_b, int *rank_t, int *omg_i, int *omg_j, int num_proc) {
-	MPI_Comm_rank(MPI_COMM_WORLD, myrank);
+	//MPI_Comm_rank(MPI_COMM_WORLD, myrank);
+	printf("P%d\t Init_Parallel \n \n",*myrank);
 	int bufRcvT[6];
-	MPI_Recv(&bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
+	printf("P%d\t Init_Parallel: Enter Recv\n \n",*myrank);
+	MPI_Recv(bufRcvT, 6, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD,
 	MPI_STATUS_IGNORE);
+	printf("P%d\t Init_Parallel: Finished Recv\n \n",*myrank);
 	*omg_i = bufRcvT[0];
+	printf("P%d\t Init_Parallel: Assigned omg_i=%d\n \n",*myrank, *omg_i);
 	*omg_j = bufRcvT[1];
+	printf("P%d\t Init_Parallel: Assigned omg_j=%d\n \n",*myrank, *omg_j);
 	*il = bufRcvT[2];
+	printf("P%d\t Init_Parallel: Assigned il=%d\n \n",*myrank, *il);
 	*ir = bufRcvT[3];
+	printf("P%d\t Init_Parallel: Assigned ir=%d\n \n",*myrank, *ir);
 	*jb = bufRcvT[4];
+	printf("P%d\t Init_Parallel: Assigned jb=%d\n \n",*myrank, *jb);
 	*jt = bufRcvT[5];
+	printf("P%d\t Init_Parallel: Assigned jt=%d\n \n",*myrank, *jt);
 
 //Assign the Neighbours
 	if (iproc > 1) { //If there are divisions in the horizontal direction
 		//Left Neighbour
 		if (*omg_i > 1) {
 			*rank_l = *myrank - 1;
+	printf("P%d\t Init_Parallel: Assigned rank_l=%d\n \n",*myrank,*rank_l);
 		} else {
 			*rank_l = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_l=%d NULL\n \n",*myrank,*rank_l);
 		}
 		//Right Neighbour
 		if (*omg_i < iproc) {
 			*rank_r = *myrank + 1;
+	printf("P%d\t Init_Parallel: Assigned rank_r=%d\n \n",*myrank,*rank_r);
 		} else {
 			*rank_r = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_r=%d NULL\n \n",*myrank,*rank_r);
 		}
 	} else { // If there are no horizontal divisions
 		*rank_r = MPI_PROC_NULL;
 		*rank_l = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_l=%d NULL rank_r=%d NULL\n \n",*myrank,*rank_l,*rank_r);
 	}
 	if (jproc > 1) { //Ensures there are divisions in the vertical direction
 		//Bottom Neighbour
 		if (*omg_j > 1) {
 			*rank_b = *myrank - iproc;
+	printf("P%d\t Init_Parallel: Assigned rank_b=%d\n \n",*myrank,*rank_b);
 		} else {
 			*rank_b = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_b=%d NULL\n \n",*myrank,*rank_b);
 		}
 		//Top Neighbour
-		if (*omg_i < jproc) {
+		if (*omg_j < jproc) {
 			*rank_t = *myrank + iproc;
+	printf("P%d\t Init_Parallel: Assigned rank_t=%d\n \n",*myrank,*rank_t);
 		} else {
 			*rank_t = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_t=%d NULL\n \n",*myrank,*rank_t);
 		}
 	} else { // If there are no vertical divisions
 		*rank_b = MPI_PROC_NULL;
 		*rank_t = MPI_PROC_NULL;
+	printf("P%d\t Init_Parallel: Assigned rank_b=%d NULL rank_t=%d NULL\n \n",*myrank,*rank_b,*rank_t);
 	}
 }
 
@@ -55,7 +74,9 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		int sndID, int sndColIdx, double *bufSend, int rcvID, int rcvColIdx,
 		double *bufRecv, int elCnt, MPI_Status *status) {
 	int *sndP_i, *sndP_j, *rcvP_i, *rcvP_j;
-	int ctr, ctr2 = 0;
+	int ctr, ctr2 = 0; int locRank;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
 
 	/*opDirn controls direction of send-receive
 	 *opDirn=1 => //Send to Left Neighbour, Receive from Right Neighbour
@@ -63,7 +84,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 *opDirn=3 => //Send to Bottom Neighbour, Receive from Top Neighbour
 	 *opDirn=4 => //Send to Top Neighbour, Receive from Bottom Neighbour
 	 */
-        printf("Entered SndRcv\n");
+        printf("P%d\t Entered SndRcv\n", locRank);
 	switch (opDirn) {
 	case 1:
 		sndP_i = &sndColIdx;
@@ -93,17 +114,17 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		rcvP_j = &rcvColIdx;
 		break;
 	}
-       printf("Checked for the cases\n");
+       printf("P%d\t Checked for the cases\n", locRank);
 	for (ctr = lowBound; ctr < upBound + 1; ctr++) {
 		bufSend[ctr2] = P[(*sndP_i)][(*sndP_j)];
 		ctr2++;
 	}
-         printf("ctr2 = %d\t %d\t %d\n",ctr, lowBound, upBound);
+         printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank,ctr, lowBound, upBound);
 	ctr2 = 0;
-        printf("About to Sendrecv\n");
+        printf("P%d\t About to Sendrecv\n", locRank);
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-        printf("About to exit SndRcv\n");
+        printf("P%d\t About to exit SndRcv\n", locRank);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		for (ctr = lowBound; ctr < upBound + 1; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
