@@ -213,17 +213,37 @@ int main(int argn, char** args) {
 
 	int maxBuf;
 	maxBuf = max((ir - il + 1), (jt - jb + 1));
-
+	printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
 	double *bufSend = malloc(maxBuf * sizeof(double));
+	printf("P%d\t Main: bufSend initialized \n \n", myrank);
 	double *bufRecv = malloc(maxBuf * sizeof(double));
+	printf("P%d\t Main: bufRecv initialized \n \n", myrank);
+
+	int iUpBoundUF = (ir+1)-(il-2);
+	int jUpBoundUF = (jt+1)-(jb-1);
+	int iUpBoundVG = (ir+1)-(il-1);
+	int jUpBoundVG = (jb+1)-(jt-2);
+	int iUpboundRS = ir-il+1;
+	int jUpboundRS = jt-jb+1;
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
+	double **P = matrix(0, iUpBoundVG, 0, jUpBoundUF);
+	double **U = matrix(0, iUpBoundUF, 0, jUpBoundUF);
+	double **V = matrix(0, iUpBoundVG, 0, jUpBoundVG);
+	double **F = matrix(0, iUpBoundUF, 0, jUpBoundUF);
+	double **G = matrix(0, iUpBoundVG, 0, jUpBoundVG);
+	double **RS = matrix(0, iUpboundRS, 0, jUpboundRS);
+	printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
+
+	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
 	double **U = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
 	double **V = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
 	double **F = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
 	double **G = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
-	double **RS = matrix(il, ir, jb, jt);
+	double **RS = matrix(il, ir, jb, jt);*/
+
+
 
 	//Initialize U, V and P
 	init_uvp(UI, VI, PI, U, V, P, il, ir, jb, jt);
