@@ -1,14 +1,18 @@
 #include "helper.h"
 #include "init.h"
+#include  "mpi.h"
 
 void init_uvp(double UI, double VI, double PI, double **U,
-		double **V, double **P, int iUpBoundUF, int jUpBoundUF, int iUpBoundVG, int jUpBoundVG) {
-
-	init_matrix(U, 0, iUpBoundUF, 0, jUpBoundUF, UI);
-
-	init_matrix(V, 0, iUpBoundVG, 0, jUpBoundVG, VI);
-
-	init_matrix(P, 0, iUpBoundVG, 0, jUpBoundUF, PI);
+		double **V, double **P, int iMaxUF, int jMaxUF, int iMaxVG, int jMaxVG) {
+//int locRank;
+//MPI_Comm_rank(MPI_COMM_WORLD,&locRank);
+//printf("P%d\t init.c: Started \n \n", locRank);
+	init_matrix(U, 0, iMaxUF, 0, jMaxUF, UI);
+	//printf("P%d\t init.c: **U initialized \n \n", locRank);
+	init_matrix(V, 0, iMaxVG, 0, jMaxVG, VI);
+	//printf("P%d\t init.c: **V initialized \n \n", locRank);
+	init_matrix(P, 0, iMaxVG, 0, jMaxUF, PI);
+	//printf("P%d\t init.c: **P initialized \n \n", locRank);
 
 }
 

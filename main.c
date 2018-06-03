@@ -186,7 +186,7 @@ int main(int argn, char** args) {
 			}
 		}
 
-		printf("P%d\t Boundaries of sub-domains assigned \n \n", myrank);
+		printf("P%d\t Bounds of sub-domains assigned \n \n", myrank);
 
 		//Assign Neighbours for Master Process
 		rank_l = MPI_PROC_NULL;
@@ -208,30 +208,41 @@ int main(int argn, char** args) {
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
-
+	Programm_Sync("Got here");
 	printf("P%d\t Parallel Processes initialized \n \n", myrank);
 
 	int maxBuf;
 	maxBuf = max((ir - il + 1), (jt - jb + 1));
-	printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
+	//printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
 	double *bufSend = malloc(maxBuf * sizeof(double));
-	printf("P%d\t Main: bufSend initialized \n \n", myrank);
+	//printf("P%d\t Main: bufSend initialized \n \n", myrank);
 	double *bufRecv = malloc(maxBuf * sizeof(double));
-	printf("P%d\t Main: bufRecv initialized \n \n", myrank);
+	//printf("P%d\t Main: bufRecv initialized \n \n", myrank);
 
 	int iMaxUF = (ir+1)-(il-2)+1;
+	//printf("P%d\t Main: iMaxUF=%d initialized \n \n", myrank,iMaxUF);
 	int jMaxUF = (jt+1)-(jb-1)+1;
+	//printf("P%d\t Main: jMaxUF=%d initialized \n \n", myrank,jMaxUF);
 	int iMaxVG = (ir+1)-(il-1)+1;
-	int jMaxVG = (jb+1)-(jt-2)+1;
-	int iMaxRS = ir-il+2;
-	int jMaxRS = jt-jb+2;
+	//printf("P%d\t Main: iMaxVG=%d initialized \n \n", myrank,iMaxVG);
+	int jMaxVG = (jt+1)-(jb-2)+1;
+	//printf("P%d\t Main: jMaxVG=%d initialized \n \n", myrank,jMaxVG);
+	int iMaxRS = ir-il+1;
+	//printf("P%d\t Main: iMaxRS=%d initialized \n \n", myrank,iMaxRS);
+	int jMaxRS = jt-jb+1;
+	//printf("P%d\t Main: jMaxRS=%d initialized \n \n", myrank,jMaxRS);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
 	double **P = matrix(0, iMaxVG, 0, jMaxUF);
+	//printf("P%d\t Main: **P initialized \n \n", myrank);
 	double **U = matrix(0, iMaxUF, 0, jMaxUF);
+	//printf("P%d\t Main: **U initialized \n \n", myrank);
 	double **V = matrix(0, iMaxVG, 0, jMaxVG);
+	//printf("P%d\t Main: **V initialized \n \n", myrank);
 	double **F = matrix(0, iMaxUF, 0, jMaxUF);
+	//printf("P%d\t Main: **F initialized \n \n", myrank);
 	double **G = matrix(0, iMaxVG, 0, jMaxVG);
+	//printf("P%d\t Main: **G initialized \n \n", myrank);
 	double **RS = matrix(0, iMaxRS, 0, jMaxRS);
 	printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
 
@@ -254,10 +265,12 @@ int main(int argn, char** args) {
 
 	while (t < t_end) {
 
+		printf("P%d\t Setting Domain BCs \n \n", myrank);
 		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b,
 				rank_t); // Assigning Domain Boundary Values
 
 		printf("P%d\t Domain Boundary values set \n \n", myrank);
+
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
 				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
