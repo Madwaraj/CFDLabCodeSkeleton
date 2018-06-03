@@ -118,7 +118,7 @@ int main(int argn, char** args) {
 			&xlength, &ylength, &dt, &dx, &dy, &imax, &jmax, &alpha, &omg, &tau,
 			&itermax, &eps, &dt_value, &iproc, &jproc);
 
-	printf("Parameters Extracted \n \n");
+	printf("P%d\t Parameters Extracted \n \n", myrank);
 
 	if (myrank == 0) {
 		mkdir("Solution", 0777);
@@ -142,32 +142,6 @@ int main(int argn, char** args) {
 				//break;
 			}
 		}
-		/*	// Broadcasting data to all processes
-
-		 MPI_Bcast(&Re, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&t_end, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&xlength, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&ylength, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&dt, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&dx, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&dy, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&imax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&jmax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&alpha, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&omg, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&tau, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&itermax, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&eps, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 MPI_Bcast(&dt_value, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		 */
-
-		/*for (i = 0; i < omg_i; i++) {
-		 for (j = 0; j < omg_j; j++) {
-		 il[i][j] = (imax / omg_i) * i;
-		 ir[i][j] = (imax / omg_i) * (i + 1);
-		 jt[i][j] = (jmax / omg_j) * j;
-		 jb[i][j] = (jmax / omg_j) * (j + 1);
-		 }*/
 
 		iChunk = imax / iproc;
 		jChunk = jmax / jproc;
@@ -176,7 +150,7 @@ int main(int argn, char** args) {
 		sndrank = 0;
 		//int *bufTemp[6];
 		int *bufTemp = malloc(6 * sizeof(int));
-		printf("Temporary Buffer created \n \n");
+		printf("P%d\t Temporary Buffer created \n \n", myrank);
 		for (int j = 1; j < jproc + 1; j++) {
 			for (int i = 1; i < iproc + 1; i++) {
 				bufTemp[0] = i; //omg_i
@@ -212,7 +186,7 @@ int main(int argn, char** args) {
 			}
 		}
 
-		printf("Boundaries of sub-domains assigned \n \n");
+		printf("P%d\t Boundaries of sub-domains assigned \n \n", myrank);
 
 		//Assign Neighbours for Master Process
 		rank_l = MPI_PROC_NULL;
@@ -235,7 +209,7 @@ int main(int argn, char** args) {
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
 
-	printf("Parallel Processes initialized \n \n");
+	printf("P%d\t Parallel Processes initialized \n \n", myrank);
 
 	int maxBuf;
 	maxBuf = max((ir - il + 1), (jt - jb + 1));
@@ -254,7 +228,7 @@ int main(int argn, char** args) {
 	//Initialize U, V and P
 	init_uvp(UI, VI, PI, U, V, P, il, ir, jb, jt);
 
-	printf("U V P Initialized \n \n");
+	printf("P%d\t U V P Initialized \n \n", myrank);
 
 	int n1 = 0;
 
@@ -263,16 +237,16 @@ int main(int argn, char** args) {
 		boundaryvalues(imax, jmax, U, V, il, ir, jb, jt, rank_l, rank_r, rank_b,
 				rank_t); // Assigning Boundary Values
 
-		printf("Boundary values set \n \n");
+		printf("P%d\t Boundary values set \n \n", myrank);
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
 				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
 
-		printf("Fn & Gn Calculated \n \n");
+		printf("P%d\t Fn & Gn Calculated \n \n", myrank);
 
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, il, ir, jb, jt); // Computing the right hand side of the Pressure Eqn
 
-		printf("RHS Calculated \n \n");
+		printf("P%d\tRHS Calculated \n \n", myrank);
 
 		int it = 0;
 
@@ -285,15 +259,16 @@ int main(int argn, char** args) {
 			it++;
 		}
 
-		printf("SOR Converged \n \n");
+		printf("P%d\t SOR Converged \n \n", myrank);
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, il, ir, jb, jt); // Computing U, V for the next time-step
 
-		printf("U V for next time step done\n \n");
+		printf("P%d\t U V for next time step done\n \n", myrank);
 
-		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend, bufRecv, &status, chunk);
+		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
+				bufRecv, &status, chunk);
 
-		printf("U V values exchanged across boundaries \n \n");
+		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
 
 		char output_dir[40];
 		sprintf(output_dir, "Solution/Output_%d", myrank);
