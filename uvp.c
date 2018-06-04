@@ -10,39 +10,39 @@ void calculate_fg(double Re, double GX, double GY, double alpha, double dt,
 		double **F, double **G, int iMaxUF, int jMaxUF, int iMaxVG, int jMaxVG,
 		int rank_l, int rank_r, int rank_b, int rank_t) {
 	double a, b, c, d, du2x2, du2y2, du2dx, duvy, dv2y2, dv2x2, dv2dy, duvx;
-	iMaxUF = iMaxUF - 1;
-	jMaxUF = jMaxUF - 1;
-	iMaxVG = iMaxVG - 1;
-	jMaxVG = jMaxVG - 1;
-
+	int iMaxU = iMaxUF - 1;
+	int jMaxU = jMaxUF - 1;
+	int iMaxV = iMaxVG - 1;
+	int jMaxV = jMaxVG - 1;
+	printf("PL:%d P:%d jMaxVG=%d", rank_l, rank_t, jMaxV);
 	if ( MPI_PROC_NULL == rank_l) {
-		for (int j = 1; j < jMaxUF; j++) {
+		for (int j = 1; j < jMaxU; j++) {
 			F[0][j] = U[1][j];
 			F[1][j] = U[1][j]; //Actually used in calcs
 		}
 	}
 	if ( MPI_PROC_NULL == rank_r) {
-		for (int j = 1; j < jMaxUF; j++) {
-			F[iMaxUF - 1][j] = U[iMaxUF - 1][j];
+		for (int j = 1; j < jMaxU; j++) {
+			F[iMaxU - 1][j] = U[iMaxU - 1][j];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_b) {
-		for (int i = 2; i < jMaxVG; i++) {
+		for (int i = 2; i < jMaxV; i++) {
 			G[i][0] = V[i][1];
 			G[i][1] = V[i][1]; //Actually used in calcs
 			//     G[i][jmax]=V[i][jmax];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_t) {
-		for (int i = 2; i < jMaxVG + 1; i++) {
+		for (int i = 2; i < jMaxV + 1; i++) {
 			//   G[i][0]=V[i][0];
-			G[i][jMaxVG - 1] = V[i][jMaxVG - 1];
+			G[i][jMaxV - 1] = V[i][jMaxV - 1];
 		}
 	}
 
 	int iVforFCalc, jVforFCalc;
-	for (int i = 2; i < iMaxUF - 1; i++) {
-		for (int j = 1; j < jMaxUF; j++) {
+	for (int i = 2; i < iMaxU - 1; i++) {
+		for (int j = 1; j < jMaxU; j++) {
 			iVforFCalc = i - 1;
 			jVforFCalc = j + 1;
 			du2x2 = (U[i + 1][j] - 2 * U[i][j] + U[i - 1][j]) / (dx * dx);
@@ -76,8 +76,8 @@ void calculate_fg(double Re, double GX, double GY, double alpha, double dt,
 		}
 	}
 	int iUforGCalc, jUforGCalc;
-	for (int i = 1; i < iMaxVG; i++) {
-		for (int j = 2; j < jMaxVG - 1; j++) {
+	for (int i = 1; i < iMaxV; i++) {
+		for (int j = 2; j < jMaxV - 1; j++) {
 			iUforGCalc = i + 1;
 			jUforGCalc = j - 1;
 			dv2y2 = (V[i][j + 1] - 2 * V[i][j] + V[i][j - 1]) / (dy * dy);
@@ -182,18 +182,18 @@ void calculate_uv(double dt, double dx, double dy, int imax, int jmax,
 		double **U, double **V, double **F, double **G, double **P, int iMaxUF,
 		int jMaxUF, int iMaxVG, int jMaxVG) {
 	int iPU, jPV;
-	iMaxUF = iMaxUF - 1;
-	jMaxUF = jMaxUF - 1;
-	iMaxVG = iMaxVG - 1;
-	jMaxVG = jMaxVG - 1;
-	for (int i = 2; i < iMaxUF - 1; i++) {
-		for (int j = 1; j < jMaxUF; j++) {
+	int iMaxU = iMaxUF - 1;
+	int jMaxU = jMaxUF - 1;
+	int iMaxV = iMaxVG - 1;
+	int jMaxV = jMaxVG - 1;
+	for (int i = 2; i < iMaxU - 1; i++) {
+		for (int j = 1; j < jMaxU; j++) {
 			iPU = i - 1;
 			U[i][j] = F[i][j] - dt * (P[iPU + 1][j] - P[iPU][j]) / dx;
 		}
 	}
-	for (int i = 1; i < iMaxVG; i++) {
-		for (int j = 2; j < jMaxVG - 1; j++) {
+	for (int i = 1; i < iMaxV; i++) {
+		for (int j = 2; j < jMaxV - 1; j++) {
 			jPV = j - 1;
 			V[i][j] = G[i][j] - dt * (P[i][jPV + 1] - P[i][jPV]) / dy;
 		}

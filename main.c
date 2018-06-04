@@ -115,16 +115,6 @@ int main(int argn, char** args) {
 	MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-	/*Debug Code*/
-	int sleepVar = 0;
-	char hostname[256];
-	gethostname(hostname, sizeof(hostname));
-	printf("PID %d with rank=%d on %s ready for attach\n", getpid(),myrank, hostname);
-	fflush(stdout);
-	while (0 == sleepVar)
-		sleep(5);
-	/*End of Debug Code*/
-
 	// Extracting parameter values from data file and assigning them to variables
 	read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end,
 			&xlength, &ylength, &dt, &dx, &dy, &imax, &jmax, &alpha, &omg, &tau,
@@ -133,6 +123,17 @@ int main(int argn, char** args) {
 	printf("P%d\t Parameters Extracted \n \n", myrank);
 
 	if (myrank == 0) {
+		/*Debug Code*/
+		int sleepVar = 0;
+		char hostname[256];
+		gethostname(hostname, sizeof(hostname));
+		printf("PID %d with rank=%d on %s ready for attach\n", getpid(), myrank,
+				hostname);
+		fflush(stdout);
+		while (0 == sleepVar)
+			sleep(5);
+		/*End of Debug Code*/
+
 		mkdir("Solution", 0777);
 		// Segregating the large domain into smaller sub-domains based on number of processes
 		if (iproc == 0 && jproc == 0) {

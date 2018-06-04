@@ -8,10 +8,10 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		int jMaxUF, int iMaxVG, int jMaxVG, int rank_l, int rank_r, int rank_b,
 		int rank_t, double *bufSend, double *bufRecv, int chunk) {
 	int i, j, iRS, jRS;
-	iMaxUF = iMaxUF - 1;
-	jMaxUF = jMaxUF - 1;
-	iMaxVG = iMaxVG - 1;
-	jMaxVG = jMaxVG - 1;
+	int iMaxU = iMaxUF - 1;
+	int jMaxU = jMaxUF - 1;
+	int iMaxV = iMaxVG - 1;
+	int jMaxV = jMaxVG - 1;
 	double rloc;
 	MPI_Status status;
 	int locRank;
@@ -22,8 +22,8 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 	MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
 
 	/* SOR iteration */
-	for (i = 1; i < iMaxVG; i++) {
-		for (j = 1; j < jMaxUF; j++) {
+	for (i = 1; i < iMaxV; i++) {
+		for (j = 1; j < jMaxU; j++) {
 			iRS = i - 1;
 			jRS = j - 1;
 			P[i][j] = (1.0 - omg) * P[i][j]
@@ -44,8 +44,8 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 
 	/* compute the residual */
 	rloc = 0;
-	for (i = 1; i < iMaxVG; i++) {
-		for (j = 1; j < jMaxUF; j++) {
+	for (i = 1; i < iMaxV; i++) {
+		for (j = 1; j < jMaxU; j++) {
 			iRS = i - 1;
 			jRS = j - 1;
 			rloc += ((P[i + 1][j] - 2.0 * P[i][j] + P[i - 1][j]) / (dx * dx)
@@ -81,23 +81,23 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 	/* set pressure boundary values */
 
 	if ( MPI_PROC_NULL == rank_l) {
-		for (int j = 0; j < jMaxUF + 1; j++) {
+		for (int j = 0; j < jMaxU + 1; j++) {
 			P[0][j] = P[1][j];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_r) {
-		for (int j = 0; j < jMaxUF + 1; j++) {
-			P[iMaxVG][j] = P[iMaxVG - 1][j];
+		for (int j = 0; j < jMaxU + 1; j++) {
+			P[iMaxV][j] = P[iMaxV - 1][j];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_b) {
-		for (int i = 0; i < iMaxVG + 1; i++) {
+		for (int i = 0; i < iMaxV + 1; i++) {
 			P[i][0] = P[i][1];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_t) {
-		for (int i = 0; i < iMaxVG + 1; i++) {
-			P[i][jMaxUF] = P[i][jMaxUF-1];
+		for (int i = 0; i < iMaxV + 1; i++) {
+			P[i][jMaxU] = P[i][jMaxU - 1];
 		}
 	}
 }
