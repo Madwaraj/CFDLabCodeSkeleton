@@ -293,7 +293,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		snd_i2 = &ctr;
 		snd_j2 = &sndColIdx2;
 		rcv_i = &ctr;
-	i	rcv_j = &rcvColIdx;
+		rcv_j = &rcvColIdx;
 		rcv_i2 = &ctr;
 		rcv_j2 = &rcvColIdx2;
 
