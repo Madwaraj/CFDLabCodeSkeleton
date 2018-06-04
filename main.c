@@ -344,6 +344,8 @@ int main(int argn, char** args) {
 	free_matrix(G, 0, iMaxVG - 1, 0, jMaxVG - 1);
 	free_matrix(RS, 0, iMaxRS - 1, 0, jMaxRS - 1);
 
+	Program_Message("Program end reached");
+
 	Programm_Stop(message);
 
 	return -1;

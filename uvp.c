@@ -174,8 +174,8 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
 			*dt = dt3;
 		}
 		*dt = *dt * tau;
-		MPI_Bcast(dt, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
+	MPI_Bcast(dt, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	Programm_Sync("New dt Value Received");
 	return;
 }
