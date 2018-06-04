@@ -88,7 +88,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 
 	printf("P%d: ", locRank);
 	Programm_Sync("Sync for eps reduction");
-	MPI_Allreduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	printf("Inside SOR: MPI_Reduce called \n \n");
 
