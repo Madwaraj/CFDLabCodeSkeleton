@@ -5,7 +5,11 @@
 void boundaryvalues(int imax, int jmax, double** U, double** V, int iMaxUF,
 		int jMaxUF, int iMaxVG, int jMaxVG, int rank_l, int rank_r, int rank_b,
 		int rank_t) {
-
+	iMaxUF = iMaxUF - 1;
+	jMaxUF = jMaxUF - 1;
+	iMaxVG = iMaxVG - 1;
+	jMaxVG = jMaxVG - 1;
+	printf("Got here, boundaryvalues.");
 	//Left Boundary
 	if ( MPI_PROC_NULL == rank_l) {
 		for (int ctrj = 0; ctrj < jMaxUF + 1; ctrj++) {
@@ -44,7 +48,7 @@ void boundaryvalues(int imax, int jmax, double** U, double** V, int iMaxUF,
 			V[ctri][jMaxVG] = 0;
 		}
 		for (int ctri = 0; ctri < iMaxUF + 1; ctri++) {
-			U[ctri][jMaxUF] = 2 - U[ctri][jMaxUF-1];
+			U[ctri][jMaxUF] = 2 - U[ctri][jMaxUF - 1];
 		}
 	}
 }

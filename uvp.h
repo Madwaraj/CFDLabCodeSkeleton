@@ -52,20 +52,9 @@ int rank_l, int rank_r, int rank_b, int rank_t
  * @f$ rs = \frac{1}{\delta t} \left( \frac{F^{(n)}_{i,j}-F^{(n)}_{i-1,j}}{\delta x} + \frac{G^{(n)}_{i,j}-G^{(n)}_{i,j-1}}{\delta y} \right)  @f$
  *
  */
-void calculate_rs(
-  double dt,
-  double dx,
-  double dy,
-  int imax,
-  int jmax,
-  double **F,
-  double **G,
-  double **RS,
-  int il,
-                  int ir,
-                  int jb,
-                  int jt
-);
+void calculate_rs(double dt, double dx, double dy, int imax, int jmax,
+		double **F, double **G, double **RS, int iMaxUF, int jMaxUF, int iMaxVG,
+		int jMaxVG, int iMaxRS, int jMaxRS);
 
 
 /**
@@ -76,24 +65,9 @@ void calculate_rs(
  * @f$ {\delta t} := \tau \, \min\left( \frac{Re}{2}\left(\frac{1}{{\delta x}^2} + \frac{1}{{\delta y}^2}\right)^{-1},  \frac{{\delta x}}{|u_{max}|},\frac{{\delta y}}{|v_{max}|} \right) @f$
  *
  */
-void calculate_dt(
-  double Re,
-  double tau,
-  double *dt,
-  double dx,
-  double dy,
-  int imax,
-  int jmax,
-  double **U,
-  double **V,
-                  int il,
-                  int ir,
-                  int jb,
-                  int jt,
-int rank_l, int rank_r, int rank_b, int rank_t
-
-
-);
+void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
+		int imax, int jmax, double **U, double **V, int iMaxUF, int jMaxUF,
+		int iMaxVG, int jMaxVG);
 
 
 /**

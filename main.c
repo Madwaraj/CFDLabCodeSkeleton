@@ -204,57 +204,55 @@ int main(int argn, char** args) {
 	}
 	// End of work for Master Thread
 
-	else {// Only Slave Threads
+	else { // Only Slave Threads
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
 	Programm_Sync("Got here");
 	printf("P%d\t Parallel Processes initialized \n \n", myrank);
 
-	int maxBuf;
-	maxBuf = max((ir - il + 1), (jt - jb + 1));
-	//printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
-	double *bufSend = malloc(maxBuf * sizeof(double));
-	//printf("P%d\t Main: bufSend initialized \n \n", myrank);
-	double *bufRecv = malloc(maxBuf * sizeof(double));
-	//printf("P%d\t Main: bufRecv initialized \n \n", myrank);
-
-	int iMaxUF = (ir+1)-(il-2)+1;
+	//Matrix extents. Includes Ghost cells + extra cells for U,V,F,G
+	int iMaxUF = (ir + 1) - (il - 2) + 1;
 	//printf("P%d\t Main: iMaxUF=%d initialized \n \n", myrank,iMaxUF);
-	int jMaxUF = (jt+1)-(jb-1)+1;
+	int jMaxUF = (jt + 1) - (jb - 1) + 1;
 	//printf("P%d\t Main: jMaxUF=%d initialized \n \n", myrank,jMaxUF);
-	int iMaxVG = (ir+1)-(il-1)+1;
+	int iMaxVG = (ir + 1) - (il - 1) + 1;
 	//printf("P%d\t Main: iMaxVG=%d initialized \n \n", myrank,iMaxVG);
-	int jMaxVG = (jt+1)-(jb-2)+1;
+	int jMaxVG = (jt + 1) - (jb - 2) + 1;
 	//printf("P%d\t Main: jMaxVG=%d initialized \n \n", myrank,jMaxVG);
-	int iMaxRS = ir-il+1;
+	int iMaxRS = ir - il + 1;
 	//printf("P%d\t Main: iMaxRS=%d initialized \n \n", myrank,iMaxRS);
-	int jMaxRS = jt-jb+1;
+	int jMaxRS = jt - jb + 1;
 	//printf("P%d\t Main: jMaxRS=%d initialized \n \n", myrank,jMaxRS);
 
+	chunk = max(max(iMaxUF - 2, jMaxUF - 2), max(iMaxVG, jMaxVG));
+	//printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
+	double *bufSend = malloc(chunk * sizeof(double));
+	//printf("P%d\t Main: bufSend initialized \n \n", myrank);
+	double *bufRecv = malloc(chunk * sizeof(double));
+	//printf("P%d\t Main: bufRecv initialized \n \n", myrank);
+
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
-	double **P = matrix(0, iMaxVG, 0, jMaxUF);
+	double **P = matrix(0, iMaxVG - 1, 0, jMaxUF - 1);
 	//printf("P%d\t Main: **P initialized \n \n", myrank);
-	double **U = matrix(0, iMaxUF, 0, jMaxUF);
+	double **U = matrix(0, iMaxUF - 1, 0, jMaxUF - 1);
 	//printf("P%d\t Main: **U initialized \n \n", myrank);
-	double **V = matrix(0, iMaxVG, 0, jMaxVG);
+	double **V = matrix(0, iMaxVG - 1, 0, jMaxVG - 1);
 	//printf("P%d\t Main: **V initialized \n \n", myrank);
-	double **F = matrix(0, iMaxUF, 0, jMaxUF);
+	double **F = matrix(0, iMaxUF - 1, 0, jMaxUF - 1);
 	//printf("P%d\t Main: **F initialized \n \n", myrank);
-	double **G = matrix(0, iMaxVG, 0, jMaxVG);
+	double **G = matrix(0, iMaxVG - 1, 0, jMaxVG - 1);
 	//printf("P%d\t Main: **G initialized \n \n", myrank);
-	double **RS = matrix(0, iMaxRS, 0, jMaxRS);
+	double **RS = matrix(0, iMaxRS - 1, 0, jMaxRS - 1);
 	printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
-	double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
-	double **U = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
-	double **V = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
-	double **F = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
-	double **G = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
-	double **RS = matrix(il, ir, jb, jt);*/
-
-
+	 double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
+	 double **U = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
+	 double **V = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
+	 double **F = matrix((il - 2), (ir + 1), (jb - 1), (jt + 1));
+	 double **G = matrix((il - 1), (ir + 1), (jb - 2), (jt + 1));
+	 double **RS = matrix(il, ir, jb, jt);*/
 
 	//Initialize U, V and P
 	init_uvp(UI, VI, PI, U, V, P, iMaxUF, jMaxUF, iMaxVG, jMaxVG);
@@ -266,18 +264,18 @@ int main(int argn, char** args) {
 	while (t < t_end) {
 
 		printf("P%d\t Setting Domain BCs \n \n", myrank);
-		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b,
-				rank_t); // Assigning Domain Boundary Values
+		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
+				rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
 
 		printf("P%d\t Domain Boundary values set \n \n", myrank);
 
-
-		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, il,
-				ir, jb, jt, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
+		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G,
+				iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
 
 		printf("P%d\t Fn & Gn Calculated \n \n", myrank);
 
-		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, il, ir, jb, jt); // Computing the right hand side of the Pressure Eqn
+		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, iMaxUF, jMaxUF, iMaxVG,
+				jMaxVG, iMaxRS, jMaxRS); // Computing the right hand side of the Pressure Eqn
 
 		printf("P%d\tRHS Calculated \n \n", myrank);
 
@@ -286,15 +284,15 @@ int main(int argn, char** args) {
 		double res = 1.0; // Residual for the SOR
 
 		while (it < itermax && res > eps) {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, rank_l,
-					rank_r, rank_b, rank_t, bufSend, bufRecv); // Successive over-realaxation to solve the Pressure Eqn
-			// Exchange Pressure values
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
+					rank_r, rank_b, rank_t, bufSend, bufRecv, chunk); // Successive over-realaxation to solve the Pressure Eqn
 			it++;
 		}
 
 		printf("P%d\t SOR Converged \n \n", myrank);
 
-		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, il, ir, jb, jt); // Computing U, V for the next time-step
+		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, iMaxUF, jMaxUF,
+				iMaxVG, jMaxVG); // Computing U, V for the next time-step
 
 		printf("P%d\t U V for next time step done\n \n", myrank);
 
@@ -312,9 +310,9 @@ int main(int argn, char** args) {
 			n1++;
 			continue;
 		}
-
+		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
+				iMaxVG, jMaxVG);
 		t = t + dt;
-
 		n++;
 	}
 
@@ -324,7 +322,7 @@ int main(int argn, char** args) {
 	free_matrix(V, 0, iMaxVG, 0, jMaxVG);
 	free_matrix(F, 0, iMaxUF, 0, jMaxUF);
 	free_matrix(G, 0, iMaxVG, 0, jMaxVG);
-	free_matrix(RS,0, iMaxRS, 0, jMaxRS);
+	free_matrix(RS, 0, iMaxRS, 0, jMaxRS);
 
 	Programm_Stop(message);
 

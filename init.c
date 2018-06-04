@@ -7,11 +7,11 @@ void init_uvp(double UI, double VI, double PI, double **U,
 //int locRank;
 //MPI_Comm_rank(MPI_COMM_WORLD,&locRank);
 //printf("P%d\t init.c: Started \n \n", locRank);
-	init_matrix(U, 0, iMaxUF, 0, jMaxUF, UI);
+	init_matrix(U, 0, iMaxUF-1, 0, jMaxUF-1, UI);
 	//printf("P%d\t init.c: **U initialized \n \n", locRank);
-	init_matrix(V, 0, iMaxVG, 0, jMaxVG, VI);
+	init_matrix(V, 0, iMaxVG-1, 0, jMaxVG-1, VI);
 	//printf("P%d\t init.c: **V initialized \n \n", locRank);
-	init_matrix(P, 0, iMaxVG, 0, jMaxUF, PI);
+	init_matrix(P, 0, iMaxVG-1, 0, jMaxUF-1, PI);
 	//printf("P%d\t init.c: **P initialized \n \n", locRank);
 
 }
