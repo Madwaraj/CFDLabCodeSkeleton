@@ -123,7 +123,7 @@ int main(int argn, char** args) {
 	printf("P%d\t Parameters Extracted \n \n", myrank);
 
 	if (myrank == 0) {
-		/*Debug Code*/
+		/*Debug Code
 		int sleepVar = 0;
 		char hostname[256];
 		gethostname(hostname, sizeof(hostname));
@@ -132,7 +132,7 @@ int main(int argn, char** args) {
 		fflush(stdout);
 		while (0 == sleepVar)
 			sleep(5);
-		/*End of Debug Code*/
+		End of Debug Code*/
 
 		mkdir("Solution", 0777);
 		// Segregating the large domain into smaller sub-domains based on number of processes
@@ -277,7 +277,7 @@ int main(int argn, char** args) {
 	while (t < t_end) {
 
 		printf("P%d\t Setting Domain BCs \n \n", myrank);
-		Programm_Sync("Got here: Main - Entering boundaryvalues");
+		//Programm_Sync("Got here: Main - Entering boundaryvalues");
 		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
 				rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
 

@@ -96,7 +96,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 *opDirn=3 => //Send to Bottom Neighbour, Receive from Top Neighbour
 	 *opDirn=4 => //Send to Top Neighbour, Receive from Bottom Neighbour
 	 */
-	printf("P%d\t Entered SndRcv\n", locRank);
+	printf("P%d\t Entered SndRcv %d time\n", locRank, opDirn);
 	switch (opDirn) {
 	case 1:
 		sndP_i = &sndColIdx;
@@ -126,21 +126,23 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		rcvP_j = &rcvColIdx;
 		break;
 	}
-	printf("P%d\t Checked for the cases\n", locRank);
+	//printf("P%d\t Checked for the cases\n", locRank);
 	for (ctr = lowBound; ctr < upBound; ctr++) {
 		bufSend[ctr2] = P[(*sndP_i)][(*sndP_j)];
 		ctr2++;
 	}
-	printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank, ctr,
-			lowBound, upBound);
+	/*printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank, ctr,
+	 lowBound, upBound);*/
 	ctr2 = 0;
-
-	Programm_Sync("About to Sendrecv");
+	printf("P%d\t Starting SndRcv %d time\n", locRank, opDirn);
+	//Programm_Sync("About to Sendrecv");
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-	printf("P%d\t About to exit SndRcv\n", locRank);
+
+	printf("P%d\t Exit SndRcv %d time status->MPI_SOURCE=%d\n", locRank, opDirn,
+			status->MPI_SOURCE);
 	//if (status->MPI_SOURCE != MPI_PROC_NULL) {
-	if (MPI_PROC_NULL!=rcvID) {
+	if (MPI_PROC_NULL != rcvID) {
 		for (ctr = lowBound; ctr < upBound; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
 			ctr2++;
@@ -153,21 +155,26 @@ void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 		MPI_Status *status, int chunk) {
 	int iSize = ir - il + 3; //Number of elements on a top or bottom facing boundary
 	int jSize = jt - jb + 3; //Number of elements on a left or right facing boundary
+	int lRank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &lRank);
 	printf("Ilow = %d\t %d \t %d\t %d\t %d\t %d\n", il, ir, jb, jt, jSize,
 			iSize);
-	printf("Entering SndRcv 1st time\n");
-	pressure_MPI_SndRcv(P, 1, 1, (jSize - 1), rank_l, 1, bufSend, rank_r,
+	//printf("Entering SndRcv 1st time\n");
+	pressure_MPI_SndRcv(P, 1, 1, (jSize - 2), rank_l, 1, bufSend, rank_r,
 			(iSize - 1), bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour
-	printf("Entering SndRcv 2nd time\n");
-	pressure_MPI_SndRcv(P, 2, 1, (jSize - 1), rank_r, (iSize - 2), bufSend,
+	Programm_Sync("Sent Pressures Left");
+	//printf("Entering SndRcv 2nd time\n");
+	pressure_MPI_SndRcv(P, 2, 1, (jSize - 2), rank_r, (iSize - 2), bufSend,
 			rank_l, 0, bufRecv, chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
-	printf("Entering SndRcv 3rd time\n");
+	Programm_Sync("Sent Pressures Right");
+	//printf("Entering SndRcv 3rd time\n");
 	pressure_MPI_SndRcv(P, 3, 1, (iSize - 1), rank_b, 1, bufSend, rank_t,
 			(jSize - 1), bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-	printf("Entering SndRcv 4th time\n");
+	Programm_Sync("Sent Pressures Top");
+	//printf("Entering SndRcv 4th time\n");
 	pressure_MPI_SndRcv(P, 4, 1, (iSize - 1), rank_t, (jSize - 2), bufSend,
 			rank_b, 0, bufRecv, chunk, status); //Send to Top Neighbour, Receive from Neighbour Bottom
-
+	Programm_Sync("All Pressures Exchanged");
 	/*
 	 * //Old Approach
 	 //Send to Left Neighbour, Receive from Right Neighbour
@@ -329,10 +336,10 @@ void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
 			iMaxU, iMaxV, bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour
 	uv_MPI_SndRcv(U, V, 2, 1, jMaxU, 1, jMaxV, rank_r, (iMaxU - 1), (iMaxV - 1),
 			bufSend, rank_l, 0, 0, bufRecv, chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
-	uv_MPI_SndRcv(U, V, 3, 1, iMaxV, 1, iMaxU, rank_b, 2, 1,
-			bufSend, rank_t, jMaxV, iMaxU, bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-	uv_MPI_SndRcv(U, V, 4, 1, iMaxV, 1, iMaxU, rank_t, (jMaxV-2),
-			(jMaxU-1), bufSend, rank_b, 0, 0, bufRecv, chunk, status); //Send to Top Neighbour, Receive from Bottom Neighbour
+	uv_MPI_SndRcv(U, V, 3, 1, iMaxV, 1, iMaxU, rank_b, 2, 1, bufSend, rank_t,
+			jMaxV, iMaxU, bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
+	uv_MPI_SndRcv(U, V, 4, 1, iMaxV, 1, iMaxU, rank_t, (jMaxV - 2), (jMaxU - 1),
+			bufSend, rank_b, 0, 0, bufRecv, chunk, status); //Send to Top Neighbour, Receive from Bottom Neighbour
 
 	/* //Old Approach
 

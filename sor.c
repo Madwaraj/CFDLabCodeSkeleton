@@ -8,10 +8,10 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		int jMaxUF, int iMaxVG, int jMaxVG, int rank_l, int rank_r, int rank_b,
 		int rank_t, double *bufSend, double *bufRecv, int chunk) {
 	int i, j, iRS, jRS;
-	int iMaxU = iMaxUF - 1;
+	//int iMaxU = iMaxUF - 1;
 	int jMaxU = jMaxUF - 1;
 	int iMaxV = iMaxVG - 1;
-	int jMaxV = jMaxVG - 1;
+	//int jMaxV = jMaxVG - 1;
 	double rloc;
 	MPI_Status status;
 	int locRank;
@@ -63,6 +63,8 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 
 	/*Send local residual sum ain process and set residual*/
 
+	printf("P%d: ",locRank);
+	Programm_Sync("Sync for eps reduction");
 	MPI_Reduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	printf("Inside SOR: MPI_Reduce called \n \n");
