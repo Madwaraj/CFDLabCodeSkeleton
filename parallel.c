@@ -134,11 +134,13 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	printf("P%d\t ctr2 = %d\t lowBound=%d\t upBound=%d\n", locRank, ctr,
 			lowBound, upBound);
 	ctr2 = 0;
-	printf("P%d\t About to Sendrecv\n", locRank);
+
+	Programm_Sync("About to Sendrecv");
 	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
 	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 	printf("P%d\t About to exit SndRcv\n", locRank);
-	if (status->MPI_SOURCE != MPI_PROC_NULL) {
+	//if (status->MPI_SOURCE != MPI_PROC_NULL) {
+	if (MPI_PROC_NULL!=rcvID) {
 		for (ctr = lowBound; ctr < upBound; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
 			ctr2++;

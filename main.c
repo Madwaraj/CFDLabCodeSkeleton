@@ -11,6 +11,8 @@
 #include "parallel.h"
 #include <math.h>
 
+#include <unistd.h> //For debugging commands
+
 /**
  * The main operation reads the configuration file, initializes the scenario and
  * contains the main loop. So here are the individual steps of the algorithm:
@@ -112,6 +114,16 @@ int main(int argn, char** args) {
 	MPI_Init(&argn, &args);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+	/*Debug Code*/
+	int sleepVar = 0;
+	char hostname[256];
+	gethostname(hostname, sizeof(hostname));
+	printf("PID %d with rank=%d on %s ready for attach\n", getpid(),myrank, hostname);
+	fflush(stdout);
+	while (0 == sleepVar)
+		sleep(5);
+	/*End of Debug Code*/
 
 	// Extracting parameter values from data file and assigning them to variables
 	read_parameters(problem_data, &Re, &UI, &VI, &PI, &GX, &GY, &t_end,
@@ -264,6 +276,7 @@ int main(int argn, char** args) {
 	while (t < t_end) {
 
 		printf("P%d\t Setting Domain BCs \n \n", myrank);
+		Programm_Sync("Got here: Main - Entering boundaryvalues");
 		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
 				rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
 
@@ -284,8 +297,9 @@ int main(int argn, char** args) {
 		double res = 1.0; // Residual for the SOR
 
 		while (it < itermax && res > eps) {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
-					rank_r, rank_b, rank_t, bufSend, bufRecv, chunk); // Successive over-realaxation to solve the Pressure Eqn
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, iMaxUF,
+					jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b, rank_t,
+					bufSend, bufRecv, chunk); // Successive over-realaxation to solve the Pressure Eqn
 			it++;
 		}
 
