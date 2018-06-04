@@ -96,7 +96,7 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 *opDirn=3 => //Send to Bottom Neighbour, Receive from Top Neighbour
 	 *opDirn=4 => //Send to Top Neighbour, Receive from Bottom Neighbour
 	 */
-	printf("P%d\t Entered SndRcv %d time\n", locRank, opDirn);
+	//printf("P%d\t Entered SndRcv %d time\n", locRank, opDirn);
 	switch (opDirn) {
 	case 1:
 		sndP_i = &sndColIdx;
@@ -135,12 +135,12 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 	 lowBound, upBound);*/
 	ctr2 = 0;
 	// Programm_Sync("Start");
-	printf("P%d: Starting SndRcv %d time\n", locRank, opDirn);
-	int errCode = MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv,
+	//printf("P%d: Starting SndRcv %d time\n", locRank, opDirn);
+	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv,
 			elCnt, MPI_DOUBLE, rcvID, 1, MPI_COMM_WORLD, status);
 	//Programm_Sync("Finish ");
-	printf("P%d\t Exit SndRcv %d time status->MPI_SOURCE=%d errCode=%d\n",
-			locRank, opDirn, status->MPI_SOURCE, errCode);
+	/*printf("P%d\t Exit SndRcv %d time status->MPI_SOURCE=%d errCode=%d\n",
+			locRank, opDirn, status->MPI_SOURCE, errCode);*/
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		//if (MPI_PROC_NULL != rcvID) {
 		for (ctr = lowBound; ctr < upBound; ctr++) {
@@ -160,21 +160,21 @@ void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 	//printf("Ilow = %d\t %d \t %d\t %d\t %d\t %d\n", il, ir, jb, jt, jSize, iSize);
 	//printf("Entering SndRcv 3rd time\n");
 	Programm_Sync("Start Pressure Swap");
-	pressure_MPI_SndRcv(P, 3, 1, (iSize - 2), rank_b, 1, bufSend, rank_t,
-			(jSize - 1), bufRecv, iSize - 2, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-	Programm_Sync("Sent Pressures Top");
-	//printf("Entering SndRcv 4th time\n");
-	pressure_MPI_SndRcv(P, 4, 1, (iSize - 2), rank_t, (jSize - 2), bufSend,
-			rank_b, 0, bufRecv, iSize - 2, status); //Send to Top Neighbour, Receive from Neighbour Bottom
-	Programm_Sync("All Pressures Exchanged");
 	//printf("Entering SndRcv 1st time\n");
 	pressure_MPI_SndRcv(P, 1, 1, (jSize - 2), rank_l, 1, bufSend, rank_r,
 			(iSize - 1), bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour
-	Programm_Sync("Sent Pressures Left");
+	//Programm_Sync("Sent Pressures Left");
 	//printf("Entering SndRcv 2nd time\n");
 	pressure_MPI_SndRcv(P, 2, 1, (jSize - 2), rank_r, (iSize - 2), bufSend,
 			rank_l, 0, bufRecv, chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
-	Programm_Sync("Sent Pressures Right");
+	//Programm_Sync("Sent Pressures Right");
+	pressure_MPI_SndRcv(P, 3, 1, (iSize - 2), rank_b, 1, bufSend, rank_t,
+			(jSize - 1), bufRecv, iSize - 2, status); //Send to Bottom Neighbour, Receive from Top Neighbour
+	//Programm_Sync("Sent Pressures Top");
+	//printf("Entering SndRcv 4th time\n");
+	pressure_MPI_SndRcv(P, 4, 1, (iSize - 2), rank_t, (jSize - 2), bufSend,
+			rank_b, 0, bufRecv, iSize - 2, status); //Send to Top Neighbour, Receive from Neighbour Bottom
+
 
 	/*
 	 * //Old Approach

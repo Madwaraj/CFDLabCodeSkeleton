@@ -199,7 +199,7 @@ int main(int argn, char** args) {
 			}
 		}
 
-		printf("P%d\t Bounds of sub-domains assigned \n \n", myrank);
+		//printf("P%d\t Bounds of sub-domains assigned \n \n", myrank);
 
 		//Assign Neighbours for Master Process
 		rank_l = MPI_PROC_NULL;
@@ -307,12 +307,12 @@ int main(int argn, char** args) {
 			it++;
 		}
 
-		printf("P%d\t SOR Converged \n \n", myrank);
+		Program_Message("SOR Converged \n \n");
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, iMaxUF, jMaxUF,
 				iMaxVG, jMaxVG); // Computing U, V for the next time-step
 
-		printf("P%d\t U V for next time step done\n \n", myrank);
+		Program_Message(" U V for next time step done\n \n");
 
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 				bufRecv, &status, chunk);

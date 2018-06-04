@@ -7,7 +7,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		double **RS, double *res, int il, int ir, int jb, int jt, int iMaxUF,
 		int jMaxUF, int iMaxVG, int jMaxVG, int rank_l, int rank_r, int rank_b,
 		int rank_t, double *bufSend, double *bufRecv, int chunk) {
-	int i, j, iRS, jRS;
+	int iRS, jRS;
 	//int iMaxU = iMaxUF - 1;
 	int jMaxU = jMaxUF - 1;
 	int iMaxV = iMaxVG - 1;
@@ -45,8 +45,8 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 	MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
 
 	/* SOR iteration */
-	for (i = 1; i < iMaxV; i++) {
-		for (j = 1; j < jMaxU; j++) {
+	for (int i = 1; i < iMaxV; i++) {
+		for (int j = 1; j < jMaxU; j++) {
 			iRS = i - 1;
 			jRS = j - 1;
 			P[i][j] = (1.0 - omg) * P[i][j]
@@ -57,18 +57,18 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		}
 	}
 
-	printf("Inside SOR: SOR Iteration done \n \n");
+	Program_Message("Inside SOR: SOR Iteration done \n \n");
 
 	// Exchange Pressures
 	pressure_comm(P, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 			bufRecv, &status, chunk);
 
-	printf("Inside SOR: Pressures Exchanged \n \n");
+	Program_Message("Inside SOR: Pressures Exchanged \n \n");
 
 	/* compute the residual */
 	rloc = 0;
-	for (i = 1; i < iMaxV; i++) {
-		for (j = 1; j < jMaxU; j++) {
+	for (int i = 1; i < iMaxV; i++) {
+		for (int j = 1; j < jMaxU; j++) {
 			iRS = i - 1;
 			jRS = j - 1;
 			rloc += ((P[i + 1][j] - 2.0 * P[i][j] + P[i - 1][j]) / (dx * dx)
@@ -80,27 +80,27 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		}
 	}
 
-	printf("Inside SOR: Local Residual calculated \n \n");
+	Program_Message("Inside SOR: Local Residual calculated \n \n");
 
-	double glRes;
+	double glRes, norm;
 
 	/*Send local residual sum ain process and set residual*/
 
-	printf("P%d: ", locRank);
-	Programm_Sync("Sync for eps reduction");
 	MPI_Reduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-	printf("Inside SOR: MPI_Reduce called \n \n");
+	Program_Message("Inside SOR: MPI_Reduce called \n \n");
 
-	double norm;
+
 
 	if (locRank == 0) {
 		norm = glRes / (imax * jmax);
 		norm = sqrt(norm);
-		MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		Program_Message("Inside SOR: Global Residual Norm calculated by MAIN. \n \n");
 	}
+	MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	*res = norm;
+	printf("global res from process %d is %lf \n \n", locRank, *res);
 	Programm_Sync("Global eps Broadcasted");
-	printf("Inside SOR: Global Residual Norm calculated \n \n");
+
 
 }
