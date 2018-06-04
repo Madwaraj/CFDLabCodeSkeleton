@@ -198,6 +198,7 @@ int main(int argn, char** args) {
 				sndrank++;
 			}
 		}
+
 		//printf("P%d\t Bounds of sub-domains assigned \n \n", myrank);
 
 		//Assign Neighbours for Master Process
@@ -215,7 +216,7 @@ int main(int argn, char** args) {
 		}
 		//printf("L=%d R=%d B=%d T=%d",rank_l,rank_r,rank_b,rank_t);
 		//Programm_Sync("");
-		free(bufTemp);
+
 	}
 	// End of work for Master Thread
 
@@ -223,7 +224,7 @@ int main(int argn, char** args) {
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
-	//Programm_Sync("");
+	Programm_Sync("");
 	//printf("P%d\t Parallel Processes initialized \n \n", myrank);
 
 	//Matrix extents. Includes Ghost cells + extra cells for U,V,F,G
@@ -240,7 +241,7 @@ int main(int argn, char** args) {
 	int jMaxRS = jt - jb + 1;
 	//printf("P%d\t Main: jMaxRS=%d initialized \n \n", myrank,jMaxRS);
 
-	chunk = max(max(iMaxUF, jMaxUF), max(iMaxVG, jMaxVG));
+	chunk = max(max(iMaxUF - 2, jMaxUF - 2), max(iMaxVG, jMaxVG));
 	//printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
 	double *bufSend = malloc(chunk * sizeof(double));
 	//printf("P%d\t Main: bufSend initialized \n \n", myrank);
@@ -316,11 +317,12 @@ int main(int argn, char** args) {
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 				bufRecv, &status, chunk);
 		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
-		char output_dir[40];
-		sprintf(output_dir, "Solution/Output_%d", myrank);
+		char output_file[40];
+		sprintf(output_file, "Solution/Output_%d", myrank);
 		if (t >= n1 * dt_value) {
-			write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
-					jMaxUF - 2, dx, dy, U, V, P);
+			/*write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
+					jMaxUF - 2, dx, dy, U, V, P);*/
+			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, dx, dy, output_file);
 			printf("%f Time Elapsed \n", n1 * dt_value);
 			n1++;
 			continue;
@@ -328,15 +330,12 @@ int main(int argn, char** args) {
 		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
 				iMaxVG, jMaxVG);
 		/*Programm_Sync("new dt found Complete");
-		 int sleepVar = 0;
-		 while (0 == sleepVar)
-		 sleep(5);*/
+		int sleepVar = 0;
+		while (0 == sleepVar)
+			sleep(5);*/
 		t = t + dt;
 		n++;
 	}
-	free(bufSend);
-	free(bufRecv);
-	Programm_Sync("Freed Send and Receive Buffers \n ");
 
 	//Free memory
 	free_matrix(P, 0, iMaxVG - 1, 0, jMaxUF - 1);
@@ -345,7 +344,8 @@ int main(int argn, char** args) {
 	free_matrix(F, 0, iMaxUF - 1, 0, jMaxUF - 1);
 	free_matrix(G, 0, iMaxVG - 1, 0, jMaxVG - 1);
 	free_matrix(RS, 0, iMaxRS - 1, 0, jMaxRS - 1);
-	Programm_Sync("Freed Matrices P, U, V, F, G, RS. Program end reached");
+
+	Programm_Sync("Program end reached");
 
 	Programm_Stop(message);
 
