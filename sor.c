@@ -17,7 +17,30 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 	int locRank;
 	double coeff = omg / (2.0 * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
 
-	printf("Inside SOR: Variables defined \n \n");
+	//printf("Inside SOR: Variables defined \n \n");
+
+	/* set pressure boundary values */
+
+	if ( MPI_PROC_NULL == rank_l) {
+		for (int j = 0; j < jMaxU + 1; j++) {
+			P[0][j] = P[1][j];
+		}
+	}
+	if ( MPI_PROC_NULL == rank_r) {
+		for (int j = 0; j < jMaxU + 1; j++) {
+			P[iMaxV][j] = P[iMaxV - 1][j];
+		}
+	}
+	if ( MPI_PROC_NULL == rank_b) {
+		for (int i = 0; i < iMaxV + 1; i++) {
+			P[i][0] = P[i][1];
+		}
+	}
+	if ( MPI_PROC_NULL == rank_t) {
+		for (int i = 0; i < iMaxV + 1; i++) {
+			P[i][jMaxU] = P[i][jMaxU - 1];
+		}
+	}
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &locRank);
 
@@ -63,9 +86,9 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 
 	/*Send local residual sum ain process and set residual*/
 
-	printf("P%d: ",locRank);
+	printf("P%d: ", locRank);
 	Programm_Sync("Sync for eps reduction");
-	MPI_Reduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Allreduce(&rloc, &glRes, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	printf("Inside SOR: MPI_Reduce called \n \n");
 
@@ -77,29 +100,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
 	*res = norm;
-
+	Programm_Sync("Global eps Broadcasted");
 	printf("Inside SOR: Global Residual Norm calculated \n \n");
 
-	/* set pressure boundary values */
-
-	if ( MPI_PROC_NULL == rank_l) {
-		for (int j = 0; j < jMaxU + 1; j++) {
-			P[0][j] = P[1][j];
-		}
-	}
-	if ( MPI_PROC_NULL == rank_r) {
-		for (int j = 0; j < jMaxU + 1; j++) {
-			P[iMaxV][j] = P[iMaxV - 1][j];
-		}
-	}
-	if ( MPI_PROC_NULL == rank_b) {
-		for (int i = 0; i < iMaxV + 1; i++) {
-			P[i][0] = P[i][1];
-		}
-	}
-	if ( MPI_PROC_NULL == rank_t) {
-		for (int i = 0; i < iMaxV + 1; i++) {
-			P[i][jMaxU] = P[i][jMaxU - 1];
-		}
-	}
 }

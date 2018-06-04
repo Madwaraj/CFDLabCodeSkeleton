@@ -10,8 +10,8 @@ void boundaryvalues(int imax, int jmax, double** U, double** V, int iMaxUF,
 	int jMaxU = jMaxUF - 1;
 	int iMaxV = iMaxVG - 1;
 	int jMaxV = jMaxVG - 1;
-	printf("iMaxU=%d, jMaxU=%d, iMaxV=%d, jMaxV=%d",iMaxU,jMaxU,iMaxV,jMaxV);
-	Programm_Sync("Got here, boundaryvalues.");
+	//printf("iMaxU=%d, jMaxU=%d, iMaxV=%d, jMaxV=%d",iMaxU,jMaxU,iMaxV,jMaxV);
+	//Programm_Sync("Got here, boundaryvalues.");
 	//Left Boundary
 	if ( MPI_PROC_NULL == rank_l) {
 		for (int ctrj = 0; ctrj < jMaxU + 1; ctrj++) {

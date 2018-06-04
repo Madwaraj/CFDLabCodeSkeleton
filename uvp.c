@@ -14,7 +14,7 @@ void calculate_fg(double Re, double GX, double GY, double alpha, double dt,
 	int jMaxU = jMaxUF - 1;
 	int iMaxV = iMaxVG - 1;
 	int jMaxV = jMaxVG - 1;
-	printf("PL:%d P:%d jMaxVG=%d", rank_l, rank_t, jMaxV);
+	//printf("P:%d P:%d jMaxVG=%d", rank_l, rank_t, jMaxV);
 	if ( MPI_PROC_NULL == rank_l) {
 		for (int j = 2; j < jMaxU; j++) {
 			F[0][j] = U[1][j];

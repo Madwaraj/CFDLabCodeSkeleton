@@ -210,10 +210,13 @@ int main(int argn, char** args) {
 			rank_r = MPI_PROC_NULL;
 		}
 		if (jproc > 1) { //Ensures there are divisions in the vertical direction
-			rank_t = 1;
+			rank_t = myrank+iproc;
 		} else { // If there are no vertical divisions
 			rank_t = MPI_PROC_NULL;
 		}
+		//printf("L=%d R=%d B=%d T=%d",rank_l,rank_r,rank_b,rank_t);
+		//Programm_Sync("");
+
 	}
 	// End of work for Master Thread
 
@@ -221,8 +224,8 @@ int main(int argn, char** args) {
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
-	Programm_Sync("Got here");
-	printf("P%d\t Parallel Processes initialized \n \n", myrank);
+	Programm_Sync("");
+	//printf("P%d\t Parallel Processes initialized \n \n", myrank);
 
 	//Matrix extents. Includes Ghost cells + extra cells for U,V,F,G
 	int iMaxUF = (ir + 1) - (il - 2) + 1;
@@ -257,7 +260,7 @@ int main(int argn, char** args) {
 	double **G = matrix(0, iMaxVG - 1, 0, jMaxVG - 1);
 	//printf("P%d\t Main: **G initialized \n \n", myrank);
 	double **RS = matrix(0, iMaxRS - 1, 0, jMaxRS - 1);
-	printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
+	//printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	 double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
@@ -270,28 +273,28 @@ int main(int argn, char** args) {
 	//Initialize U, V and P
 	init_uvp(UI, VI, PI, U, V, P, iMaxUF, jMaxUF, iMaxVG, jMaxVG);
 
-	printf("P%d\t U V P Initialized \n \n", myrank);
+	//printf("P%d\t U V P Initialized \n \n", myrank);
 
 	int n1 = 0;
 
 	while (t < t_end) {
 
-		printf("P%d\t Setting Domain BCs \n \n", myrank);
+		//printf("P%d\t Setting Domain BCs \n \n", myrank);
 		//Programm_Sync("Got here: Main - Entering boundaryvalues");
 		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
 				rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
 
-		printf("P%d\t Domain Boundary values set \n \n", myrank);
+		//printf("P%d\t Domain Boundary values set \n \n", myrank);
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G,
 				iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
 
-		printf("P%d\t Fn & Gn Calculated \n \n", myrank);
+		//printf("P%d\t Fn & Gn Calculated \n \n", myrank);
 
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, iMaxUF, jMaxUF, iMaxVG,
 				jMaxVG, iMaxRS, jMaxRS); // Computing the right hand side of the Pressure Eqn
 
-		printf("P%d\tRHS Calculated \n \n", myrank);
+		//printf("P%d\tRHS Calculated \n \n", myrank);
 
 		int it = 0;
 
