@@ -16,25 +16,25 @@ void calculate_fg(double Re, double GX, double GY, double alpha, double dt,
 	int jMaxV = jMaxVG - 1;
 	printf("PL:%d P:%d jMaxVG=%d", rank_l, rank_t, jMaxV);
 	if ( MPI_PROC_NULL == rank_l) {
-		for (int j = 1; j < jMaxU; j++) {
+		for (int j = 2; j < jMaxU; j++) {
 			F[0][j] = U[1][j];
 			F[1][j] = U[1][j]; //Actually used in calcs
 		}
 	}
 	if ( MPI_PROC_NULL == rank_r) {
-		for (int j = 1; j < jMaxU; j++) {
+		for (int j = 2; j < jMaxU; j++) {
 			F[iMaxU - 1][j] = U[iMaxU - 1][j];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_b) {
-		for (int i = 2; i < jMaxV; i++) {
+		for (int i = 1; i < iMaxV; i++) {
 			G[i][0] = V[i][1];
 			G[i][1] = V[i][1]; //Actually used in calcs
 			//     G[i][jmax]=V[i][jmax];
 		}
 	}
 	if ( MPI_PROC_NULL == rank_t) {
-		for (int i = 2; i < jMaxV + 1; i++) {
+		for (int i = 1; i < iMaxV; i++) {
 			//   G[i][0]=V[i][0];
 			G[i][jMaxV - 1] = V[i][jMaxV - 1];
 		}
