@@ -124,15 +124,15 @@ int main(int argn, char** args) {
 
 	if (myrank == 0) {
 		/*Debug Code
-		int sleepVar = 0;
-		char hostname[256];
-		gethostname(hostname, sizeof(hostname));
-		printf("PID %d with rank=%d on %s ready for attach\n", getpid(), myrank,
-				hostname);
-		fflush(stdout);
-		while (0 == sleepVar)
-			sleep(5);
-		End of Debug Code*/
+		 int sleepVar = 0;
+		 char hostname[256];
+		 gethostname(hostname, sizeof(hostname));
+		 printf("PID %d with rank=%d on %s ready for attach\n", getpid(), myrank,
+		 hostname);
+		 fflush(stdout);
+		 while (0 == sleepVar)
+		 sleep(5);
+		 End of Debug Code*/
 
 		mkdir("Solution", 0777);
 		// Segregating the large domain into smaller sub-domains based on number of processes
@@ -210,7 +210,7 @@ int main(int argn, char** args) {
 			rank_r = MPI_PROC_NULL;
 		}
 		if (jproc > 1) { //Ensures there are divisions in the vertical direction
-			rank_t = myrank+iproc;
+			rank_t = myrank + iproc;
 		} else { // If there are no vertical divisions
 			rank_t = MPI_PROC_NULL;
 		}
@@ -316,31 +316,33 @@ int main(int argn, char** args) {
 
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 				bufRecv, &status, chunk);
-
 		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
-
 		char output_dir[40];
 		sprintf(output_dir, "Solution/Output_%d", myrank);
 		if (t >= n1 * dt_value) {
-			write_vtkFile(output_dir, n, xlength, ylength, imax, jmax, dx, dy,
-					U, V, P);
+			write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
+					jMaxUF - 2, dx, dy, U, V, P);
 			printf("%f Time Elapsed \n", n1 * dt_value);
 			n1++;
 			continue;
 		}
 		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
 				iMaxVG, jMaxVG);
+		/*Programm_Sync("new dt found Complete");
+		int sleepVar = 0;
+		while (0 == sleepVar)
+			sleep(5);*/
 		t = t + dt;
 		n++;
 	}
 
 	//Free memory
-	free_matrix(P, 0, iMaxVG, 0, jMaxUF);
-	free_matrix(U, 0, iMaxUF, 0, jMaxUF);
-	free_matrix(V, 0, iMaxVG, 0, jMaxVG);
-	free_matrix(F, 0, iMaxUF, 0, jMaxUF);
-	free_matrix(G, 0, iMaxVG, 0, jMaxVG);
-	free_matrix(RS, 0, iMaxRS, 0, jMaxRS);
+	free_matrix(P, 0, iMaxVG - 1, 0, jMaxUF - 1);
+	free_matrix(U, 0, iMaxUF - 1, 0, jMaxUF - 1);
+	free_matrix(V, 0, iMaxVG - 1, 0, jMaxVG - 1);
+	free_matrix(F, 0, iMaxUF - 1, 0, jMaxUF - 1);
+	free_matrix(G, 0, iMaxVG - 1, 0, jMaxVG - 1);
+	free_matrix(RS, 0, iMaxRS - 1, 0, jMaxRS - 1);
 
 	Programm_Stop(message);
 
