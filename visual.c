@@ -101,7 +101,7 @@
 
 /////// New Function for local sub-domains /////////
 void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
-		int jt, int omg_i, int omg_j, double dx, double dy, char *output_file) {
+		int jt, int omg_i, int omg_j, int n,double dx, double dy, char *output_file) {
 
 	int i, j;
 
@@ -112,7 +112,7 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 
 	char szFileName[80];
 	FILE *fp = NULL;
-	sprintf(szFileName, "%s_%i_%i.vtk", output_file, omg_i, omg_j);
+	sprintf(szFileName, "%s_%d.vtk", output_file,n);
 	fp = fopen(szFileName, "w");
 	if (fp == NULL) {
 		char szBuff[80];
@@ -124,7 +124,7 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 	write_vtkHeader(fp, iPtsTotal, jPtsTotal);
 	write_vtkPointCoordinates(fp, il, jb, ir, jt, dx, dy);
 
-	fprintf(fp, "POINT_DATA %i \n", (iPtsTotal) * (jPtsTotal));
+	fprintf(fp, "POINT_DATA %i \n", (iPtsTotal+1) * (jPtsTotal+1));
 
 	fprintf(fp, "\n");
 	fprintf(fp, "VECTORS velocity float\n");
@@ -132,8 +132,8 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 	int iVMat = 0;
 	int jVMat = 0;
 	// U V values
-	for (j = 0; j < jPtsTotal-1; j++) {
-		for (i = 1; i < iPtsTotal-1; i++) {
+	for (j = 0; j < jPtsTotal; j++) {
+		for (i = 1; i < iPtsTotal; i++) {
 			iVMat = i - 1;
 			jVMat = j + 1;
 			fprintf(fp, "%f %f 0\n", (U[i][j] + U[i][j + 1]) * 0.5,

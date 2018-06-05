@@ -46,7 +46,7 @@ void write_vtkFile(const char *szProblem,
  */
 
 void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
-		int jt, int omg_i, int omg_j, double dx, double dy, char *output_file) ;
+		int jt, int omg_i, int omg_j, int n,double dx, double dy, char *output_file)  ;
 
 void write_vtkHeader(FILE *fp, int iPtsTotal, int jPtsTotal);
 

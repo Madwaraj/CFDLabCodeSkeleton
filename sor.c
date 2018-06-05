@@ -100,7 +100,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 	MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	*res = norm;
 //	printf("global res from process %d is %lf \n \n", locRank, *res);
-	Programm_Sync("Global eps Broadcasted");
+	//Programm_Sync("Global eps Broadcasted");
 
 
 }

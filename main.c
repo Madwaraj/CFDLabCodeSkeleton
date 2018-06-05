@@ -279,6 +279,7 @@ int main(int argn, char** args) {
 
 	while (t < t_end) {
 
+
 		//printf("P%d\t Setting Domain BCs \n \n", myrank);
 		//Programm_Sync("Got here: Main - Entering boundaryvalues");
 		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
@@ -318,21 +319,21 @@ int main(int argn, char** args) {
 				bufRecv, &status, chunk);
 		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
 		char output_file[40];
-		sprintf(output_file, "Solution/Output_%d_%lf", myrank,t);
-		if (t >= n1 * dt_value) {
+		sprintf(output_file, "Solution/Output_%d_",myrank);
+		if (t >= n1 * dt_value *dt) {
 			/*write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
 					jMaxUF - 2, dx, dy, U, V, P);*/
 
-			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, dx, dy, output_file);
+			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, n, dx, dy, output_file);
 			printf("%f Time Elapsed \n", n1 * dt_value);
 			n1++;
 		}
-		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
-				iMaxVG, jMaxVG);
 		/*Programm_Sync("new dt found Complete");
 		int sleepVar = 0;
 		while (0 == sleepVar)
 			sleep(5);*/
+		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
+								iMaxVG, jMaxVG);
 		t = t + dt;
 		n++;
 	}
