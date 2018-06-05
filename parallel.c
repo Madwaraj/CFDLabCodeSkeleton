@@ -161,7 +161,7 @@ void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 	MPI_Comm_rank(MPI_COMM_WORLD, &lRank);
 	//printf("Ilow = %d\t %d \t %d\t %d\t %d\t %d\n", il, ir, jb, jt, jSize, iSize);
 	//printf("Entering SndRcv 3rd time\n");
-	Programm_Sync("Start Pressure Swap");
+	//Programm_Sync("Start Pressure Swap");
 	//printf("Entering SndRcv 1st time\n");
 	pressure_MPI_SndRcv(P, 1, 1, (jSize - 2), rank_l, 1, bufSend, rank_r,
 			(iSize - 1), bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour

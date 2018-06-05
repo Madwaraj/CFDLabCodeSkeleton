@@ -318,14 +318,14 @@ int main(int argn, char** args) {
 				bufRecv, &status, chunk);
 		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
 		char output_file[40];
-		sprintf(output_file, "Solution/Output_%d", myrank);
+		sprintf(output_file, "Solution/Output_%d_%lf", myrank,t);
 		if (t >= n1 * dt_value) {
 			/*write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
 					jMaxUF - 2, dx, dy, U, V, P);*/
+
 			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, dx, dy, output_file);
 			printf("%f Time Elapsed \n", n1 * dt_value);
 			n1++;
-			continue;
 		}
 		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
 				iMaxVG, jMaxVG);
