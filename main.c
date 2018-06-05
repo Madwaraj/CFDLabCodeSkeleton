@@ -124,12 +124,12 @@ int main(int argn, char** args) {
 
 	if (myrank == 0) {
 		/*Debug Code
-		 int sleepVar = 0;
 		 char hostname[256];
 		 gethostname(hostname, sizeof(hostname));
 		 printf("PID %d with rank=%d on %s ready for attach\n", getpid(), myrank,
 		 hostname);
 		 fflush(stdout);
+		 int sleepVar = 0;
 		 while (0 == sleepVar)
 		 sleep(5);
 		 End of Debug Code*/
@@ -161,7 +161,6 @@ int main(int argn, char** args) {
 
 		// Assign values for il, ir, jb, jt
 		sndrank = 0;
-		//int *bufTemp[6];
 		int *bufTemp = malloc(6 * sizeof(int));
 		printf("P%d\t Temporary Buffer created \n \n", myrank);
 		for (int j = 1; j < jproc + 1; j++) {
@@ -199,8 +198,6 @@ int main(int argn, char** args) {
 			}
 		}
 
-		//printf("P%d\t Bounds of sub-domains assigned \n \n", myrank);
-
 		//Assign Neighbours for Master Process
 		rank_l = MPI_PROC_NULL;
 		rank_b = MPI_PROC_NULL;
@@ -214,9 +211,6 @@ int main(int argn, char** args) {
 		} else { // If there are no vertical divisions
 			rank_t = MPI_PROC_NULL;
 		}
-		//printf("L=%d R=%d B=%d T=%d",rank_l,rank_r,rank_b,rank_t);
-		//Programm_Sync("");
-
 	}
 	// End of work for Master Thread
 
@@ -224,43 +218,34 @@ int main(int argn, char** args) {
 		init_parallel(iproc, jproc, imax, jmax, &myrank, &il, &ir, &jb, &jt,
 				&rank_l, &rank_r, &rank_b, &rank_t, &omg_i, &omg_j, num_proc); //Initialising the parallel processes
 	}
-	Programm_Sync("");
-	//printf("P%d\t Parallel Processes initialized \n \n", myrank);
+	//printf("P%d\t Parallel Processes initialized, rankL=%d rankR=%d rankB=%d rankT=%d \n \n", myrank, rank_l,rank_r,rank_b,rank_t);
 
 	//Matrix extents. Includes Ghost cells + extra cells for U,V,F,G
-	int iMaxUF = (ir + 1) - (il - 2) + 1;
-	//printf("P%d\t Main: iMaxUF=%d initialized \n \n", myrank,iMaxUF);
-	int jMaxUF = (jt + 1) - (jb - 1) + 1;
-	//printf("P%d\t Main: jMaxUF=%d initialized \n \n", myrank,jMaxUF);
-	int iMaxVG = (ir + 1) - (il - 1) + 1;
-	//printf("P%d\t Main: iMaxVG=%d initialized \n \n", myrank,iMaxVG);
-	int jMaxVG = (jt + 1) - (jb - 2) + 1;
-	//printf("P%d\t Main: jMaxVG=%d initialized \n \n", myrank,jMaxVG);
-	int iMaxRS = ir - il + 1;
-	//printf("P%d\t Main: iMaxRS=%d initialized \n \n", myrank,iMaxRS);
-	int jMaxRS = jt - jb + 1;
-	//printf("P%d\t Main: jMaxRS=%d initialized \n \n", myrank,jMaxRS);
-
-	chunk = max(max(iMaxUF - 2, jMaxUF - 2), max(iMaxVG, jMaxVG));
-	//printf("P%d\t Main: Max Buff =%d initialized \n \n", myrank, maxBuf);
+	int iTotElsUF = (ir + 1) - (il - 2) + 1;
+	int jTotElsUF = (jt + 1) - (jb - 1) + 1;
+	int iTotElsVG = (ir + 1) - (il - 1) + 1;
+	int jTotElsVG = (jt + 1) - (jb - 2) + 1;
+	int iTotElsRS = ir - il + 1;
+	int jTotElsRS = jt - jb + 1;
+	chunk = max(max(iTotElsUF - 2, jTotElsUF - 2), max(iTotElsVG, jTotElsVG));
+	/*printf(
+			"P%d\t iTotElsUF=%d jTotElsUF=%d iTotElsVG=%d jTotElsVG=%d iTotElsRS=%d jTotElsRS=%d chunk=%d\n \n",
+			myrank, iTotElsUF, jTotElsUF, iTotElsVG, jTotElsVG, iTotElsRS,
+			jTotElsRS, chunk);
+	MPI_Barrier(MPI_COMM_WORLD);  synchronize output
+	int sleepVar = 0;
+	while (0 == sleepVar)
+		sleep(5);*/
 	double *bufSend = malloc(chunk * sizeof(double));
-	//printf("P%d\t Main: bufSend initialized \n \n", myrank);
 	double *bufRecv = malloc(chunk * sizeof(double));
-	//printf("P%d\t Main: bufRecv initialized \n \n", myrank);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap*/
-	double **P = matrix(0, iMaxVG - 1, 0, jMaxUF - 1);
-	//printf("P%d\t Main: **P initialized \n \n", myrank);
-	double **U = matrix(0, iMaxUF - 1, 0, jMaxUF - 1);
-	//printf("P%d\t Main: **U initialized \n \n", myrank);
-	double **V = matrix(0, iMaxVG - 1, 0, jMaxVG - 1);
-	//printf("P%d\t Main: **V initialized \n \n", myrank);
-	double **F = matrix(0, iMaxUF - 1, 0, jMaxUF - 1);
-	//printf("P%d\t Main: **F initialized \n \n", myrank);
-	double **G = matrix(0, iMaxVG - 1, 0, jMaxVG - 1);
-	//printf("P%d\t Main: **G initialized \n \n", myrank);
-	double **RS = matrix(0, iMaxRS - 1, 0, jMaxRS - 1);
-	//printf("P%d\t Main: P, U, V, F, G, RS Matrices initialized \n \n", myrank);
+	double **P = matrix(0, iTotElsVG - 1, 0, jTotElsUF - 1);
+	double **U = matrix(0, iTotElsUF - 1, 0, jTotElsUF - 1);
+	double **V = matrix(0, iTotElsVG - 1, 0, jTotElsVG - 1);
+	double **F = matrix(0, iTotElsUF - 1, 0, jTotElsUF - 1);
+	double **G = matrix(0, iTotElsVG - 1, 0, jTotElsVG - 1);
+	double **RS = matrix(0, iTotElsRS - 1, 0, jTotElsRS - 1);
 
 	/* Dynamic allocation of matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	 double **P = matrix((il - 1), (ir + 1), (jb - 1), (jt + 1));
@@ -271,7 +256,7 @@ int main(int argn, char** args) {
 	 double **RS = matrix(il, ir, jb, jt);*/
 
 	//Initialize U, V and P
-	init_uvp(UI, VI, PI, U, V, P, iMaxUF, jMaxUF, iMaxVG, jMaxVG);
+	init_uvp(UI, VI, PI, U, V, P, iTotElsUF, jTotElsUF, iTotElsVG, jTotElsVG);
 
 	//printf("P%d\t U V P Initialized \n \n", myrank);
 
@@ -279,77 +264,60 @@ int main(int argn, char** args) {
 
 	while (t < t_end) {
 
-
-		//printf("P%d\t Setting Domain BCs \n \n", myrank);
-		//Programm_Sync("Got here: Main - Entering boundaryvalues");
-		boundaryvalues(imax, jmax, U, V, iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l,
-				rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
-
-		//printf("P%d\t Domain Boundary values set \n \n", myrank);
+		boundaryvalues(imax, jmax, U, V, iTotElsUF, jTotElsUF, iTotElsVG,
+				jTotElsVG, rank_l, rank_r, rank_b, rank_t); // Assigning Domain Boundary Values
 
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G,
-				iMaxUF, jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b, rank_t); // Computing Fn and Gn
+				iTotElsUF, jTotElsUF, iTotElsVG, jTotElsVG, rank_l, rank_r,
+				rank_b, rank_t); // Computing Fn and Gn
 
-		//printf("P%d\t Fn & Gn Calculated \n \n", myrank);
-
-		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, iMaxUF, jMaxUF, iMaxVG,
-				jMaxVG, iMaxRS, jMaxRS); // Computing the right hand side of the Pressure Eqn
-
-		//printf("P%d\tRHS Calculated \n \n", myrank);
+		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, iTotElsUF, jTotElsUF,
+				iTotElsVG, jTotElsVG, iTotElsRS, jTotElsRS); // Computing the right hand side of the Pressure Eqn
 
 		int it = 0;
 
 		double res = 1.0; // Residual for the SOR
 
 		while (it < itermax && res > eps) {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, iMaxUF,
-					jMaxUF, iMaxVG, jMaxVG, rank_l, rank_r, rank_b, rank_t,
-					bufSend, bufRecv, chunk); // Successive over-realaxation to solve the Pressure Eqn
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, il, ir, jb, jt, iTotElsUF,
+					jTotElsUF, iTotElsVG, jTotElsVG, rank_l, rank_r, rank_b,
+					rank_t, bufSend, bufRecv, chunk); // Successive over-realaxation to solve the Pressure Eqn
 			it++;
 		}
 
-		Program_Message("SOR Converged \n \n");
-
-		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, iMaxUF, jMaxUF,
-				iMaxVG, jMaxVG); // Computing U, V for the next time-step
-
-		Program_Message(" U V for next time step done\n \n");
+		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, iTotElsUF,
+				jTotElsUF, iTotElsVG, jTotElsVG); // Computing U, V for the next time-step
 
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 				bufRecv, &status, chunk);
-		printf("P%d\t U V values exchanged across boundaries \n \n", myrank);
-		char output_file[40];
-		sprintf(output_file, "Solution/Output_%d_",myrank);
-		if (t >= n1 * dt_value *dt) {
-			/*write_vtkFile(output_dir, n, xlength, ylength, iMaxVG - 2,
-					jMaxUF - 2, dx, dy, U, V, P);*/
 
-			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, n, dx, dy, output_file);
+		char output_file[40];
+		sprintf(output_file, "Solution/Output_%d_", myrank);
+		if (t >= n1 * dt_value * dt) {
+			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, n, dx, dy,
+					output_file);
 			printf("%f Time Elapsed \n", n1 * dt_value);
 			n1++;
 		}
-		/*Programm_Sync("new dt found Complete");
-		int sleepVar = 0;
-		while (0 == sleepVar)
-			sleep(5);*/
-		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iMaxUF, jMaxUF,
-								iMaxVG, jMaxVG);
+
+		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, iTotElsUF,
+				jTotElsUF, iTotElsVG, jTotElsVG);
 		t = t + dt;
 		n++;
 	}
 
 	//Free memory
-	free_matrix(P, 0, iMaxVG - 1, 0, jMaxUF - 1);
-	free_matrix(U, 0, iMaxUF - 1, 0, jMaxUF - 1);
-	free_matrix(V, 0, iMaxVG - 1, 0, jMaxVG - 1);
-	free_matrix(F, 0, iMaxUF - 1, 0, jMaxUF - 1);
-	free_matrix(G, 0, iMaxVG - 1, 0, jMaxVG - 1);
-	free_matrix(RS, 0, iMaxRS - 1, 0, jMaxRS - 1);
+	free_matrix(P, 0, iTotElsVG - 1, 0, jTotElsUF - 1);
+	free_matrix(U, 0, iTotElsUF - 1, 0, jTotElsUF - 1);
+	free_matrix(V, 0, iTotElsVG - 1, 0, jTotElsVG - 1);
+	free_matrix(F, 0, iTotElsUF - 1, 0, jTotElsUF - 1);
+	free_matrix(G, 0, iTotElsVG - 1, 0, jTotElsVG - 1);
+	free_matrix(RS, 0, iTotElsRS - 1, 0, jTotElsRS - 1);
 
 	Programm_Sync("Program end reached");
 
 	Programm_Stop(message);
 
-	return -1;
+	return 0;
 }
 

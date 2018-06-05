@@ -3,15 +3,15 @@
 #include  "mpi.h"
 
 void init_uvp(double UI, double VI, double PI, double **U,
-		double **V, double **P, int iMaxUF, int jMaxUF, int iMaxVG, int jMaxVG) {
+		double **V, double **P, int iTotElsUF, int jTotElsUF, int iTotElsVG, int jTotElsVG) {
 //int locRank;
 //MPI_Comm_rank(MPI_COMM_WORLD,&locRank);
 //printf("P%d\t init.c: Started \n \n", locRank);
-	init_matrix(U, 0, iMaxUF-1, 0, jMaxUF-1, UI);
+	init_matrix(U, 0, iTotElsUF-1, 0, jTotElsUF-1, UI);
 	//printf("P%d\t init.c: **U initialized \n \n", locRank);
-	init_matrix(V, 0, iMaxVG-1, 0, jMaxVG-1, VI);
+	init_matrix(V, 0, iTotElsVG-1, 0, jTotElsVG-1, VI);
 	//printf("P%d\t init.c: **V initialized \n \n", locRank);
-	init_matrix(P, 0, iMaxVG-1, 0, jMaxUF-1, PI);
+	init_matrix(P, 0, iTotElsVG-1, 0, jTotElsUF-1, PI);
 	//printf("P%d\t init.c: **P initialized \n \n", locRank);
 
 }
