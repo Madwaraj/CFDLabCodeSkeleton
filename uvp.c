@@ -150,7 +150,7 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
 	}
 	MPI_Reduce(&U1, &Umax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 	MPI_Reduce(&V1, &Vmax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
+	//int *newdt = NULL;
 	if (myrank == 0) {
 		dt1 = 0.5 * Re / (1 / (dx * dx) + 1 / (dy * dy));
 		dt2 = dx / fabs(Umax);
@@ -165,9 +165,11 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy,
 			*dt = dt3;
 		}
 		*dt = *dt * tau;
+
 	}
 	MPI_Bcast(dt, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD); /* synchronize*/
+	//*dt = *newdt;
 	return;
 }
 

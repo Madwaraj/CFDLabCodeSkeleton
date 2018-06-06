@@ -1,6 +1,6 @@
 #include "parallel.h"
 
-// #include <unistd.h> //For debugging commands
+#include <unistd.h> //For debugging commands
 
 void init_parallel(int iproc, int jproc, int imax, int jmax, int *myrank,
 		int *il, int *ir, int *jb, int *jt, int *rank_l, int *rank_r,
@@ -102,11 +102,11 @@ void pressure_MPI_SndRcv(double **P, int opDirn, int lowBound, int upBound,
 		bufSend[ctr2] = P[(*sndP_i)][(*sndP_j)];
 		ctr2++;
 	}
+
 	ctr2 = 0;
-
-	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
-	MPI_DOUBLE, rcvID, 1, MPI_COMM_WORLD, status);
-
+	//bufSend[0]=1;
+	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, opDirn, bufRecv, elCnt,
+	MPI_DOUBLE, rcvID, opDirn, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		for (ctr = lowBound; ctr < upBound; ctr++) {
 			P[(*rcvP_i)][(*rcvP_j)] = bufRecv[ctr2];
@@ -127,7 +127,7 @@ void pressure_comm(double **P, int il, int ir, int jb, int jt, int rank_l,
 			bufRecv, chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
 	pressure_MPI_SndRcv(P, 3, 1, (iMaxP + 1), rank_b, 1, bufSend, rank_t,
 			(jMaxP + 1), bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-	pressure_MPI_SndRcv(P, 4, 1, (iMaxP+1), rank_t, jMaxP, bufSend, rank_b, 0,
+	pressure_MPI_SndRcv(P, 4, 1, (iMaxP + 1), rank_t, jMaxP, bufSend, rank_b, 0,
 			bufRecv, chunk, status); //Send to Top Neighbour, Receive from Neighbour Bottom
 
 	/*
@@ -263,8 +263,8 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 		ctr2++;
 	}
 	ctr2 = 0;
-	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, 1, bufRecv, elCnt,
-	MPI_DOUBLE, rcvID, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+	MPI_Sendrecv(bufSend, elCnt, MPI_DOUBLE, sndID, opDirn, bufRecv, elCnt,
+	MPI_DOUBLE, rcvID, opDirn, MPI_COMM_WORLD, status);
 	if (status->MPI_SOURCE != MPI_PROC_NULL) {
 		// Receive 1VelComp values
 		for (ctr = lowBound; ctr < upBound; ctr++) {
@@ -277,6 +277,7 @@ void uv_MPI_SndRcv(double **U, double **V, int opDirn, //controls direction of s
 			ctr2++;
 		}
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
@@ -287,14 +288,16 @@ void uv_comm(double**U, double**V, int il, int ir, int jb, int jt, int rank_l,
 	int iMaxPlus1V = (ir + 1) - (il - 1); //Last i index in v matrix
 	int jMaxPlus1V = (jt + 1) - (jb - 2); //Last j index in v matrix
 
-	uv_MPI_SndRcv(U, V, 1, 1, jMaxPlus1U, 1, jMaxPlus1V, rank_l, 2, 1, bufSend, rank_r,
-			iMaxPlus1U, iMaxPlus1V, bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour
-	uv_MPI_SndRcv(U, V, 2, 1, jMaxPlus1U, 1, jMaxPlus1V, rank_r, (iMaxPlus1U - 2), (iMaxPlus1V - 1),
-			bufSend, rank_l, 0, 0, bufRecv, chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
-	uv_MPI_SndRcv(U, V, 3, 1, iMaxPlus1V, 1, iMaxPlus1U, rank_b, 2, 1, bufSend, rank_t,
-			jMaxPlus1V, jMaxPlus1U, bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
-	uv_MPI_SndRcv(U, V, 4, 1, iMaxPlus1V, 1, iMaxPlus1U, rank_t, (jMaxPlus1V - 2), (jMaxPlus1U - 1),
-			bufSend, rank_b, 0, 0, bufRecv, chunk, status); //Send to Top Neighbour, Receive from Bottom Neighbour
+	uv_MPI_SndRcv(U, V, 1, 1, jMaxPlus1U, 1, jMaxPlus1V, rank_l, 2, 1, bufSend,
+			rank_r, iMaxPlus1U, iMaxPlus1V, bufRecv, chunk, status); //Send to Left Neighbour, Receive from Right Neighbour
+	uv_MPI_SndRcv(U, V, 2, 1, jMaxPlus1U, 1, jMaxPlus1V, rank_r,
+			(iMaxPlus1U - 2), (iMaxPlus1V - 1), bufSend, rank_l, 0, 0, bufRecv,
+			chunk, status); //Send to Right Neighbour, Receive from Left Neighbour
+	uv_MPI_SndRcv(U, V, 3, 1, iMaxPlus1V, 1, iMaxPlus1U, rank_b, 2, 1, bufSend,
+			rank_t, jMaxPlus1V, jMaxPlus1U, bufRecv, chunk, status); //Send to Bottom Neighbour, Receive from Top Neighbour
+	uv_MPI_SndRcv(U, V, 4, 1, iMaxPlus1V, 1, iMaxPlus1U, rank_t,
+			(jMaxPlus1V - 2), (jMaxPlus1U - 1), bufSend, rank_b, 0, 0, bufRecv,
+			chunk, status); //Send to Top Neighbour, Receive from Bottom Neighbour
 
 	/* //Old Approach
 

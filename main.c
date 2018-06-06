@@ -258,8 +258,6 @@ int main(int argn, char** args) {
 	//Initialize U, V and P
 	init_uvp(UI, VI, PI, U, V, P, iTotElsUF, jTotElsUF, iTotElsVG, jTotElsVG);
 
-	//printf("P%d\t U V P Initialized \n \n", myrank);
-
 	int n1 = 0;
 
 	while (t < t_end) {
@@ -288,12 +286,13 @@ int main(int argn, char** args) {
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, iTotElsUF,
 				jTotElsUF, iTotElsVG, jTotElsVG); // Computing U, V for the next time-step
 
+		MPI_Barrier(MPI_COMM_WORLD);
 		uv_comm(U, V, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 				bufRecv, &status, chunk);
 
 		char output_file[40];
 		sprintf(output_file, "Solution/Output_%d_", myrank);
-		if (t >= n1 * dt_value * dt) {
+		if (t >= n1 * dt_value) {
 			output_uvp(U, V, P, il, ir, jb, jt, omg_i, omg_j, n, dx, dy,
 					output_file);
 			printf("%f Time Elapsed \n", n1 * dt_value);

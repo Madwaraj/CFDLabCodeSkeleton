@@ -14,7 +14,7 @@ void boundaryvalues(int imax, int jmax, double** U, double** V, int iTotElsUF,
 	//Left Boundary
 	if (rank_l == MPI_PROC_NULL) {
 		for (int ctrj = 1; ctrj < jMaxPlus1U; ctrj++) {
-			//U[0][ctrj] = 0;
+			U[0][ctrj] = 0;
 			U[1][ctrj] = 0;
 		}
 		for (int ctrj = 1; ctrj < jMaxPlus1V; ctrj++) {
@@ -35,11 +35,11 @@ void boundaryvalues(int imax, int jmax, double** U, double** V, int iTotElsUF,
 	//Bottom Boundary
 	if (rank_b == MPI_PROC_NULL) {
 		for (int ctri = 1; ctri < iMaxPlus1V; ctri++) {
-			//V[ctri][0] = 0;
+			V[ctri][0] = 0;
 			V[ctri][1] = 0;
 		}
 		for (int ctri = 1; ctri < iMaxPlus1U; ctri++) {
-			U[ctri][1] = -U[ctri][2];
+			U[ctri][0] = -U[ctri][1];
 		}
 	}
 

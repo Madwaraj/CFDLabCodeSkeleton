@@ -3,6 +3,8 @@
 #include <mpi.h>
 #include "parallel.h"
 
+#include <unistd.h> //For debugging commands
+
 void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 		double **RS, double *res, int il, int ir, int jb, int jt, int iTotElsUF,
 		int jTotElsUF, int iTotElsVG, int jTotElsVG, int rank_l, int rank_r, int rank_b,
@@ -50,7 +52,7 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 			P[i][j] = (1.0 - omg) * P[i][j]	+ coeff	* ((P[i + 1][j] + P[i - 1][j]) / (dx * dx)	+ (P[i][j + 1] + P[i][j - 1]) / (dy * dy)- RS[iRS][jRS]);
 		}
 	}
-
+	MPI_Barrier(MPI_COMM_WORLD); /* synchronize*/
 // Exchange Pressures
 	pressure_comm(P, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, bufSend,
 			bufRecv, &status, chunk);
@@ -75,8 +77,13 @@ void sor(double omg, double dx, double dy, int imax, int jmax, double **P,
 
 		norm = glRes / (imax * jmax);
 		norm = sqrt(norm);
+		*res = norm; //Updated Total Residual
 	}
-	MPI_Bcast(&norm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	*res = norm; //Updated Total Residual
+	MPI_Bcast(res, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD); /* synchronize*/
+	/*printf("P%d: rloc=%lf res=%lf \n",locRank,rloc, *res);
+			Programm_Sync("All Threads here");
+							int sleepVar = 0;
+										while (0 == sleepVar)
+										sleep(5);*/
 }

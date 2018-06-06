@@ -108,8 +108,8 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 
 	//New imax and jmax
 
-	int iPtsTotal = ir - il + 1;
-	int jPtsTotal = jt - jb + 1;
+	int iMaxLocal = ir - il + 1;
+	int jMaxLocal = jt - jb + 1;
 
 	char szFileName[80];
 	FILE *fp = NULL;
@@ -122,10 +122,10 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 		return;
 	}
 
-	write_vtkHeader(fp, iPtsTotal, jPtsTotal);
+	write_vtkHeader(fp, iMaxLocal, jMaxLocal);
 	write_vtkPointCoordinates(fp, il, jb, ir, jt, dx, dy);
 
-	fprintf(fp, "POINT_DATA %i \n", (iPtsTotal + 1) * (jPtsTotal + 1));
+	fprintf(fp, "POINT_DATA %i \n", (iMaxLocal + 1) * (jMaxLocal + 1));
 
 	fprintf(fp, "\n");
 	fprintf(fp, "VECTORS velocity float\n");
@@ -133,8 +133,8 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 	int iVMat = 0;
 	int jVMat = 0;
 	// U V values
-	for (j = 0; j < jPtsTotal+1; j++) {
-		for (i = 1; i < iPtsTotal+1; i++) {
+	for (j = 0; j < jMaxLocal+1; j++) {
+		for (i = 1; i < iMaxLocal+1; i++) {
 			iVMat = i - 1;
 			jVMat = j + 1;
 			fprintf(fp, "%f %f 0\n", (U[i][j] + U[i][j + 1]) * 0.5,
@@ -142,13 +142,13 @@ void output_uvp(double **U, double **V, double **P, int il, int ir, int jb,
 		}
 	}
 	fprintf(fp, "\n");
-	fprintf(fp, "CELL_DATA %i \n", (iPtsTotal * jPtsTotal));
+	fprintf(fp, "CELL_DATA %i \n", (iMaxLocal * jMaxLocal));
 	fprintf(fp, "SCALARS pressure float 1 \n");
 	fprintf(fp, "LOOKUP_TABLE default \n");
 
 	// New bounds of i and j
-	for (j = 1; j < jPtsTotal + 1; j++) {
-		for (i = 1; i < iPtsTotal + 1; i++) {
+	for (j = 1; j < jMaxLocal + 1; j++) {
+		for (i = 1; i < iMaxLocal + 1; i++) {
 			fprintf(fp, "%f\n", P[i][j]);
 		}
 	}
