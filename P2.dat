@@ -7,8 +7,8 @@ jmax		22
 #--------------------------------------------
 #            size of the domain             
 #--------------------------------------------
-xlength		1
-ylength		1
+xlength		10
+ylength		2
 
 #--------------------------------------------
 #               time steps
@@ -60,4 +60,8 @@ TI		0
 T_h		0
 T_c		0
 beta		0
+
+problem		P2
+geometry	P2.pgm
+
 

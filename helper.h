@@ -104,7 +104,6 @@ void read_string( const char* szFilename, const char* szName, char*  sValue);
 void read_int   ( const char* szFilename, const char* szName, int*    nValue);
 void read_double( const char* szFilename, const char* szName, double*  Value);
 
-
 /**
  * Writing matrices to a file.
  * -----------------------------------------------------------------------

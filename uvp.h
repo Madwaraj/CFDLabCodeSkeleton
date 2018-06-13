@@ -1,7 +1,6 @@
 #ifndef __UVP_H__
 #define __UVP_H__
 
-
 /**
  * Determines the value of U and G according to the formula
  *
@@ -23,6 +22,10 @@
  * @f$ i=1,\ldots,imax, \quad j=1,\ldots,jmax-1 @f$
  *
  */
+ 
+double three_min(double a, double b, double c);
+ 
+ 
 void calculate_fg(
   double Re,
   double GX,
@@ -36,7 +39,11 @@ void calculate_fg(
   double **U,
   double **V,
   double **F,
-  double **G
+  double **G,
+  int **flag,
+  double beta,
+  double **temp,
+  int include_temp
 );
 
 
@@ -55,7 +62,8 @@ void calculate_rs(
   int jmax,
   double **F,
   double **G,
-  double **RS
+  double **RS,
+  int **flag
 );
 
 
@@ -76,7 +84,9 @@ void calculate_dt(
   int imax,
   int jmax,
   double **U,
-  double **V
+  double **V,
+  double Pr,
+  int include_temp
 );
 
 
@@ -103,7 +113,19 @@ void calculate_uv(
   double **V,
   double **F,
   double **G,
-  double **P
+  double **P,
+  int **flag
 );
 
+void calculate_temp(double **temp, double **temp1, double Pr, double Re, int imax,int jmax,double dx, double dy,double dt, double alpha,double **U,double **V,int **flag, double TI, double T_h, double T_c, int select);
+
+
+
+void nullify_obstacles1(double **U, double **V, double **P, int **flag, int imax, int jmax);
+
+
+
+void nullify_obstacles2(double **U, double **V, double **P, double **T, int **flag, int imax, int jmax);
+
 #endif
+

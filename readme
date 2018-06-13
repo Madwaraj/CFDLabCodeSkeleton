@@ -1,0 +1,22 @@
+
+Assignment-2
+MSc Practical Course- CFD
+Members - Sarthak Garg, Abinav Ravi, Naveen G.
+
+
+Before execution, this folder should contain the following:
+
+	source code files : main.cpp,
+	header fles	  : 
+	.dat files	  :
+	.pgm files	  : 
+ 
+   
+INSTRUCTIONS OF USE:
+-> select the problem from shell by typing 1 to 5.
+
+-> use command 'make' to execute, and 'make clean' to go back to original state.
+
+-> check the Output folder for .vtk files for visualization of results.
+
+-> check the .log file for simulation details, convergence, etc.
