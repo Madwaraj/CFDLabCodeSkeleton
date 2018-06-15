@@ -46,7 +46,7 @@
 int main(int argn, char** args){
 
 	printf("Start of Run... \n");
-			printf("Assignment-2, Group D \n");
+			printf("Assignment-4, Group F \n");
 			printf("Please select the problem from the list below by typing 1-5 \n");
 			printf("P1. Karman Vortex Street \n");
 			printf("P2. Flow over a Step \n");
@@ -98,6 +98,8 @@ int main(int argn, char** args){
     double dy;                /* length of a cell y-dir. */
     int  imax;                /* number of cells x-direction*/
     int  jmax;                /* number of cells y-direction*/
+    int imaxPlus2;
+    int jmaxPlus2;
     double alpha;             /* uppwind differencing factor*/
     double omg;               /* relaxation factor */
     double tau;               /* safety factor for time step*/
@@ -112,9 +114,11 @@ int main(int argn, char** args){
     double beta;
 
     //Read and assign the parameter values from file
-    read_parameters(filename, &imax, &jmax, &xlength, &ylength, 
+    read_parameters(filename, &imax, &jmax, &xlength, &ylength,
 			&dt, &t_end, &tau, &dt_value, &eps, &omg, &alpha, &itermax,
 			&GX, &GY, &Re, &Pr, &UI, &VI, &PI, &TI, &T_h, &T_c, &beta, &dx, &dy, problem, geometry);
+    imaxPlus2 = imax+2;
+    jmaxPlus2 = jmax+2;
 
 	//include_temp =1 => include temperature equations for solving
     int include_temp = 1;
@@ -131,33 +135,33 @@ int main(int argn, char** args){
 
     //Allocate the matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
     printf("PROGRESS: Starting matrix allocation... \n");
-    double **P = matrix(0, imax-1, 0, jmax-1);
-    double **U = matrix(0, imax-1, 0, jmax-1);
-    double **V = matrix(0, imax-1, 0, jmax-1);
-    double **F = matrix(0, imax-1, 0, jmax-1);
-    double **G = matrix(0, imax-1, 0, jmax-1);
-    double **RS = matrix(0, imax-1, 0, jmax-1);
-    int **flag = imatrix(0, imax-1, 0, jmax-1);
+    double **P = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    double **U = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    double **V = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    double **F = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    double **G = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    double **RS = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+    int **flag = imatrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
     double **T;
     double **T1;
 	if(include_temp)
 	{	
-		T = matrix(0, imax-1, 0, jmax-1);
-		T1= matrix(0, imax-1, 0, jmax-1);
+		T = matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
+		T1= matrix(0, imaxPlus2-1, 0, jmaxPlus2-1);
 	}
     printf("PROGRESS: Matrices allocated on heap... \n \n");
 
     //Initilize flags
-    init_flag(problem,geometry, imax, jmax, flag);
+    init_flag(problem,geometry, imaxPlus2, jmaxPlus2, flag);
 
     //Initialize the U, V and P
     if(include_temp)
 	{
-		init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
+		init_uvpt(UI, VI, PI, TI, imaxPlus2, jmaxPlus2, U, V, P, T, flag);
 	}
 	else
 	{
-		init_uvp(UI, VI, PI, imax, jmax, U, V, P, flag);
+		init_uvp(UI, VI, PI, imaxPlus2, jmaxPlus2, U, V, P, flag);
 	}
 
 	//Make solution folder
@@ -168,6 +172,7 @@ int main(int argn, char** args){
     		mkdir(sol_folder, 0700);
 	}
 
+	//VTK File Name Prefix
 	char sol_directory[80];
 	sprintf( sol_directory,"Solution_%s/sol", problem);
 	//create log file
@@ -184,28 +189,29 @@ int main(int argn, char** args){
 	while (t < t_end) {
         char* is_converged = "Yes";
 		
-		calculate_dt(Re,tau,&dt,dx,dy,imax,jmax, U, V, Pr, include_temp);
+		calculate_dt(Re,tau,&dt,dx,dy,imaxPlus2,jmaxPlus2, U, V, Pr, include_temp);
    		printf("t = %f ,dt = %f, ",t,dt);						
     	
-		boundaryvalues(imax, jmax, U, V, flag);
+		boundaryvalues(imaxPlus2, jmaxPlus2, U, V, flag);
 
 		if(include_temp)
 		{
-			calculate_temp(T, T1, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag, TI, T_h, T_c, select);
+			calculate_temp(T, T1, Pr, Re, imaxPlus2, jmaxPlus2, dx, dy, dt, alpha, U, V, flag, TI, T_h, T_c, select);
 			
 		}
 
-    	spec_boundary_val(imax, jmax, U, V, flag);
+		//Used only if inflow BCs are set in PGM
+    	spec_boundary_val(imaxPlus2, jmaxPlus2, U, V, flag);
 
-    	calculate_fg(Re,GX,GY,alpha,dt,dx,dy,imax,jmax,U,V,F,G,flag, beta, T, include_temp);
+    	calculate_fg(Re,GX,GY,alpha,dt,dx,dy,imaxPlus2,jmaxPlus2,U,V,F,G,flag, beta, T, include_temp);
 									
-    	calculate_rs(dt,dx,dy,imax,jmax,F,G,RS,flag);
+    	calculate_rs(dt,dx,dy,imaxPlus2,jmaxPlus2,F,G,RS,flag);
 											
 		int it = 0;
 		double res = 10.0;
 
     	do {
-    		sor(omg,dx,dy,imax,jmax,P,RS,&res,flag);
+    		sor(omg,dx,dy,imaxPlus2,jmaxPlus2,P,RS,&res,flag);
 			++it;
 
     	} while(it<itermax && res>eps);
@@ -216,21 +222,21 @@ int main(int argn, char** args){
 		}
   		fprintf(fp_log, "    %d |  %f | %f |      %d      | %f | %s \n", n, t, dt, it-1, res, is_converged);
 
-		calculate_uv(dt,dx,dy,imax,jmax,U,V,F,G,P,flag);
+		calculate_uv(dt,dx,dy,imaxPlus2,jmaxPlus2,U,V,F,G,P,flag);
 
 
 		if(!include_temp)
 		{
-			nullify_obstacles1(U, V, P, flag, imax, jmax);
+			nullify_obstacles1(U, V, P, flag, imaxPlus2, jmaxPlus2);
   		}
 		else
 		{
-			nullify_obstacles2(U, V, P, T, flag, imax, jmax);
+			nullify_obstacles2(U, V, P, T, flag, imaxPlus2, jmaxPlus2);
 		}	
 
 		if ((t >= n1*dt_value)&&(t!=0.0))
   		{
-   			write_vtkFile(sol_directory ,n ,xlength ,ylength ,imax-2 ,jmax-2 ,
+   			write_vtkFile(sol_directory ,n ,xlength ,ylength ,imaxPlus2-2 ,jmaxPlus2-2 ,
 							dx ,dy ,U ,V ,P,T,include_temp);
 
 			printf("writing result at %f seconds \n",n1*dt_value);
@@ -246,15 +252,15 @@ int main(int argn, char** args){
 
     printf("PROGRESS: Freeing allocated memory...\n");
     //Free memory
-    free_matrix( P, 0, imax-1, 0, jmax-1);
-    free_matrix( U, 0, imax-1, 0, jmax-1);
-    free_matrix( V, 0, imax-1, 0, jmax-1);
-    free_matrix( F, 0, imax-1, 0, jmax-1);
-    free_matrix( G, 0, imax-1, 0, jmax-1);
-    free_matrix(RS, 0, imax-1, 0, jmax-1);
-    free_imatrix(flag, 0, imax-1, 0, jmax-1);
-	if(include_temp) { free_matrix(T, 0, imax-1, 0, jmax-1);
-			   free_matrix(T1, 0, imax-1, 0, jmax-1); }
+    free_matrix( P, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_matrix( U, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_matrix( V, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_matrix( F, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_matrix( G, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_matrix(RS, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+    free_imatrix(flag, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+	if(include_temp) { free_matrix(T, 0, imaxPlus2-1, 0, jmaxPlus2-1);
+			   free_matrix(T1, 0, imaxPlus2-1, 0, jmaxPlus2-1); }
 	free(geometry);
 	free(problem);
     printf("PROGRESS: allocated memory released...\n \n");

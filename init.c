@@ -115,28 +115,28 @@ void init_uvpt(double UI, double VI, double PI, double TI, int imax, int jmax,
 }
 
 int  isfluid(int pic){
-	if((pic == 2)||(pic == 3)||(pic == 4)) {return 1;}
+	if((pic == 2)||(pic == 3)||(pic == 6)) {return 1;}
 		else {return 0;}
 }
 
 void call_assert_error()
 {
 	char szBuff[80];
-       	sprintf( szBuff, "Geometry is forbidden. Consider modifying .pgm file. \n");
+       	sprintf( szBuff, "Current geometry is forbidden. Modify .pgm file. \n");
         ERROR( szBuff );
 }
 
 // fluid on opposite sides Left and right
 int forbidden_LR(int **pic, int i, int j)
 {
-	if( (pic[i-1][j]==4)&&(pic[i+1][j]==4) ) {return 1;}
+	if( (pic[i-1][j]==6)&&(pic[i+1][j]==6) ) {return 1;}
 	else {return 0;}
 }
 
 // fluid on opposite sides top and bottom
 int forbidden_TB(int **pic, int i, int j)
 {
-	if( (pic[i][j+1]==4)&&(pic[i][j-1]==4) ) {return 1;}
+	if( (pic[i][j+1]==6)&&(pic[i][j-1]==6) ) {return 1;}
 	else {return 0;}	
 }
 
@@ -148,7 +148,7 @@ void forbid_assert(int imax, int jmax, int **pic)
 	{
 		for(int j=1; j<jmax-1; j++)
 		{
-			if(pic[i][j]!=4)
+			if(pic[i][j]!=6)
 			{
 				if(forbidden_LR(pic,i,j)||forbidden_TB(pic,i,j))
 				{
@@ -160,7 +160,7 @@ void forbid_assert(int imax, int jmax, int **pic)
 	//left boundary
 		for(int j=1; j<jmax-1; j++)
 		{
-			if(pic[0][j]!=4)
+			if(pic[0][j]!=6)
 			{
 				if(forbidden_TB(pic,0,j))
 				{
@@ -171,7 +171,7 @@ void forbid_assert(int imax, int jmax, int **pic)
 	//right boundary
 		for(int j=1; j<jmax-1; j++)
 		{
-			if(pic[imax-1][j]!=4)
+			if(pic[imax-1][j]!=6)
 			{
 				if(forbidden_TB(pic,imax-1,j))
 				{
@@ -182,7 +182,7 @@ void forbid_assert(int imax, int jmax, int **pic)
 	//top boundary
 	for(int i=1; i<imax-1; i++)
 	{
-			if(pic[i][jmax-1]!=4)
+			if(pic[i][jmax-1]!=6)
 			{
 				if(forbidden_LR(pic,i,jmax-1))
 				{
@@ -193,7 +193,7 @@ void forbid_assert(int imax, int jmax, int **pic)
 	//bottom boundary
 	for(int i=1; i<imax-1; i++)
 	{
-			if(pic[i][0]!=4)
+			if(pic[i][0]!=6)
 			{
 				if(forbidden_LR(pic,i,0))
 				{
@@ -210,7 +210,7 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag)
 	printf("PROGRESS: Setting flags... \n");
 	int **pic = imatrix(0,imax-1,0,jmax-1);
 	pic = read_pgm(geometry);
-
+	forbid_assert(imax, jmax, pic); //Checks for disallowed geometries
 	for (int i=0; i<imax; i++)
 	{
 		for (int j=0; j<jmax; j++)
@@ -218,49 +218,53 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag)
 
 		flag[i][j] = 0;
 
-		forbid_assert(imax, jmax, pic);
-
 		switch(pic[i][j])
 		{
-			case 0: //fluid
+			case 0: //no-slip
 			flag[i][j] = 1<<1;
 			break;
 
-			case 1: //no-slip
+			case 1: //free-slip
 			flag[i][j] = 1<<2;
 			break;
 
-			case 2: //free-slip
+			case 2: //outflow
 			flag[i][j] = 1<<3;
 			break;
 
-			case 3: //outflow
+			case 3: //inflow
 			flag[i][j] = 1<<4;
 			break;
 
-			case 4: //inflow
+			case 4: //coupling
+			//Implies that the first 5 values (from right to left) are all zeros.
+			//This condition is taken as a coupling obstacle cell.
+			flag[i][j] = 0<<0;
+			break;
+
+			case 6: //fluid
 			flag[i][j] = 1<<0;
 			break;
 		}
 
-			if(!isfluid(pic[i][j])) //set boundaries if not 
+			if(!isfluid(pic[i][j])) //set neighbors if not fluid
 			{
 
-				if(i<imax-1 && pic[i+1][j]==4)
+				if(i<imax-1 && pic[i+1][j]==6)
 				{
-				flag[i][j] |= 1<<8;
+				flag[i][j] |= 1<<8;  //Set B_O
 				}
-				if( i>0 && pic[i-1][j]==4)
+				if( i>0 && pic[i-1][j]==6)
 				{
-				flag[i][j] |= 1<<7;
+				flag[i][j] |= 1<<7; //Set B_W
 				}
-				if(j<jmax-1 && pic[i][j+1]==4)
+				if(j<jmax-1 && pic[i][j+1]==6)
 				{
-				flag[i][j] |= 1<<5;
+				flag[i][j] |= 1<<5; //Set B_N
 				}
-				if(j>0 && pic[i][j-1]==4)
+				if(j>0 && pic[i][j-1]==6)
 				{
-				flag[i][j] |= 1<<6;
+				flag[i][j] |= 1<<6; //Set B_S
 				}
 			}
  

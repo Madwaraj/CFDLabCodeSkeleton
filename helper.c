@@ -166,7 +166,7 @@ void read_string( const char* szFileName, const char* szVarName, char*   pVariab
 	szValue = find_string( szFileName, szVarName +1 );
     else
 	szValue = find_string( szFileName, szVarName );
-    	if( sscanf( szValue, "%s", pVariable) == 0)
+    if( sscanf( szValue, "%s", pVariable) == 0)
 	READ_ERROR("wrong format", szVarName, szFileName,0);
 
     printf( "File: %s\t\t%s%s= %s\n", szFileName, 
