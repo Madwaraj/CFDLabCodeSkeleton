@@ -139,9 +139,12 @@ int main(int argn, char** args) {
 	}
 	printf("PROGRESS: Matrices allocated on heap... \n \n");
 
-	//Initilize flags
+	//Initilize flags and get count of num_coupling_cells
 	init_flag(problem, geometry, imax, jmax, flag, &num_coupling_cells);
 
+	//Initialise vertices for preCICE with num_coupling_cells from init_flag
+	int* vertexIDs = (int*) malloc(num_coupling_cells * sizeof(int));
+	vertexIDs=precice_set_interface_vertices(imax,jmax,dx,dy,x_origin,y_origin,num_coupling_cells,temperature,flag,vertexIDs);
 	//Initialize the U, V and P
 	if (include_temp) {
 		init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);

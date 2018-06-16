@@ -3,10 +3,9 @@
 
 int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		double x_origin, double y_origin, int num_coupling_cells, int meshID,
-		int **flag) {
+		int **flag, int* vertexIDs) {
 	int dimension = 3;
 	int coupledcell = 0;
-	int* vertexIDs = (int*) malloc(num_coupling_cells * sizeof(int));
 	double* vertices = (double*) malloc(
 			sizeof(double) * num_coupling_cells * dimension);
 
