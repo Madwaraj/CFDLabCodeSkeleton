@@ -64,7 +64,12 @@ void read_parameters( const char *szFileName,       /* name of the file */
 		    double *dx,                /* length of a cell x-dir. */
                     double *dy,               /* length of a cell y-dir. */
             	    char *problem,
-		    char *geometry                    		                               /* for pressure per time step */
+		    char *geometry,
+		    char *precice_config, 
+		    char *participant_name, 
+		    char *mesh_name, 
+		    char *read_data_name,
+		    char *write_data_name                   		                               /* for pressure per time step */
 
 );
 
@@ -108,8 +113,8 @@ int forbidden_TB(int **pic, int i, int j);
 
 void forbid_assert(int imax, int jmax, int **pic);
 
-void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag);
+void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag, int *num_coupling_cells);
 
-
+/*int num_coupling( char* geometry, int imax, int jmax);*/
 #endif
 

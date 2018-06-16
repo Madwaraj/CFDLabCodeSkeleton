@@ -6,8 +6,6 @@
 #define MT_SOURCE_PRECICE_ADAPTER_H
 
 
-#include "Definitions.h"
-
 void write_checkpoint(double time, double **U, double **V, double **T, double *time_cp, double **U_cp, double **V_cp,
                       double **T_cp, int imax, int jmax);
 void restore_checkpoint(double *time, double **U, double **V, double **T, double time_cp, double **U_cp,

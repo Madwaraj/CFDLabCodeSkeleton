@@ -577,7 +577,7 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 
 }
 
-void nullify_obstacles1(double **U, double **V, double **P, int **flag,
+/*void nullify_obstacles1(double **U, double **V, double **P, int **flag,
 		int imax, int jmax) {
 
 	for (int i = 0; i < imax + 2; i++) {
@@ -606,5 +606,5 @@ void nullify_obstacles2(double **U, double **V, double **P, double **T,
 		}
 	}
 
-}
+}*/
 
