@@ -132,7 +132,7 @@ int main(int argn, char** args) {
 	int **flag = imatrix(0, imax + 1, 0, jmax + 1);
 	double **T;
 	double **T1;
-	int num_coupling_cells;
+	int num_coupling_cells; //Number of Coupling Cells
 	if (include_temp) {
 		T = matrix(0, imax + 1, 0, jmax + 1);
 		T1 = matrix(0, imax + 1, 0, jmax + 1);
