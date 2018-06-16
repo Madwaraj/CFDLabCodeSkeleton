@@ -108,7 +108,7 @@ int forbidden_TB(int **pic, int i, int j);
 
 void forbid_assert(int imax, int jmax, int **pic);
 
-void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag);
+void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag, int *num_coupling_cells);
 
 
 #endif
