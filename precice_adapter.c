@@ -75,7 +75,7 @@ void precice_write_temperature(int imax, int jmax, int num_coupling_cells, doubl
 }
 
 
-void write_checkpoint(double time, double **U, double **V, double **TEMP, double *time_cp, double **U_cp, double **V_cp,
+void write_checkpoint(double time, double **U, double **V, double **T, double *time_cp, double **U_cp, double **V_cp,
                       double **T_cp, int imax, int jmax)
 {
     time_cp = time;
@@ -90,7 +90,8 @@ void write_checkpoint(double time, double **U, double **V, double **TEMP, double
 }
 
 
-void restore checkpoint(double *time, double **U, double **V, double **TEMP, double **U_cp, double **V_cp,double **T_cp, int imax, int jmax)
+void restore_checkpoint(double *time, double **U, double **V, double **T, double time_cp, double **U_cp,
+                        double **V_cp, double **T_cp, int imax, int jmax)
 {
     
     time = time_cp;
