@@ -43,6 +43,7 @@ int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy, do
     }
 }
             precicec_setMeshVertices(meshID, num_coupling_cells, vertices, vertexIDs);
+    return vertexIDs;
 }
 
 
@@ -71,5 +72,35 @@ void precice_write_temperature(int imax, int jmax, int num_coupling_cells, doubl
             }
         }
         precicec_writeBlockScalarData(temperatureID, num_coupling_cells, vertexIDs, temperature);
+}
+
+
+void write_checkpoint(double time, double **U, double **V, double **TEMP, double *time_cp, double **U_cp, double **V_cp,
+                      double **T_cp, int imax, int jmax)
+{
+    time_cp = time;
+    
+    for (int i=1; i<=imax; i++) {
+        for (int j=1; j<=jmax; j++) {
+            T_cp[i][j] = T[i][j];
+            U_cp[i][j] = U[i][j];
+            V_cp[i][j] = V[i][j];
+        }
+    }
+}
+
+
+void restore checkpoint(double *time, double **U, double **V, double **TEMP, double **U_cp, double **V_cp,double **T_cp, int imax, int jmax)
+{
+    
+    time = time_cp;
+    
+    for (int i=1; i<=imax; i++) {
+        for (int j=1; j<=jmax; j++) {
+            T[i][j] = T_cp[i][j];
+            U[i][j] = U_cp[i][j];
+            V[i][j] = V_cp[i][j];
+        }
+    }
 }
 
