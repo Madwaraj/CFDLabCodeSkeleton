@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "adapters/c/SolverInterfaceC.h"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -46,11 +47,11 @@ int main(int argn, char** args) {
 
 	printf("Start of Run... \n");
 	printf("Assignment-4, Group F \n");
-	printf("Please select the problem from the list below by typing 1-5 \n");
-	printf("P1. Forced Convection Over a Heated Plate \n");
-	printf("P2. Natural Convection In Cavity With Heat-Conducting Walls \n");
-	printf("P3. F1-2D Heat Exchanger \n");
-	printf("P4. F2-2D Heat Exchanger \n");
+	printf("Please select the problem from the list below by typing 1-4 \n");
+	printf("P1: Forced Convection Over a Heated Plate \n");
+	printf("P2: Natural Convection In Cavity With Heat-Conducting Walls \n");
+	printf("P3: F1-2D Heat Exchanger \n");
+	printf("P4: F2-2D Heat Exchanger \n");
 	int select;
 	char* geometry = (char*) (malloc(sizeof(char) * 6));
 	char* problem = (char*) (malloc(sizeof(char) * 2));
@@ -131,6 +132,7 @@ int main(int argn, char** args) {
 	int **flag = imatrix(0, imax + 1, 0, jmax + 1);
 	double **T;
 	double **T1;
+	int num_coupling_cells;
 	if (include_temp) {
 		T = matrix(0, imax + 1, 0, jmax + 1);
 		T1 = matrix(0, imax + 1, 0, jmax + 1);
@@ -138,7 +140,7 @@ int main(int argn, char** args) {
 	printf("PROGRESS: Matrices allocated on heap... \n \n");
 
 	//Initilize flags
-	init_flag(problem, geometry, imax, jmax, flag);
+	init_flag(problem, geometry, imax, jmax, flag, &num_coupling_cells);
 
 	//Initialize the U, V and P
 	if (include_temp) {

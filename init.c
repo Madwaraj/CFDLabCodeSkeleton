@@ -183,13 +183,15 @@ void forbid_assert(int imax, int jmax, int **pic) {
 
 }
 
-void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag) {
+void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
+		int *num_coupling_cells) {
 	printf("PROGRESS: Setting flags... \n");
 	int **pic = imatrix(0, imax + 1, 0, jmax + 1);
+	int NumCoupCells = 0;
 	pic = read_pgm(geometry);
 	forbid_assert(imax, jmax, pic); //Checks for disallowed geometries
-	for (int i = 0; i < imax+2; i++) {
-		for (int j = 0; j < jmax+2; j++) {
+	for (int i = 0; i < imax + 2; i++) {
+		for (int j = 0; j < jmax + 2; j++) {
 
 			flag[i][j] = 0;
 
@@ -214,6 +216,7 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag) {
 				//Implies that the first 5 values (from right to left) are all zeros.
 				//This condition is taken as a coupling obstacle cell.
 				flag[i][j] = 0 << 0;
+				NumCoupCells++;
 				break;
 
 			case 6: //fluid
@@ -241,7 +244,8 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag) {
 		}
 
 	}
+	*num_coupling_cells = NumCoupCells;
 	free_imatrix(pic, 0, imax + 1, 0, jmax + 1);
-	printf("PROGRESS: flags set using .pgm file...\n \n");
+	printf("PROGRESS: flags set using .pgm file. num_coupling_cells assigned.\n \n");
 
 }
