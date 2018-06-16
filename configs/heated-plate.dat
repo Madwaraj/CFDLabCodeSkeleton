@@ -24,7 +24,7 @@ jmax		40
 #--------------------------------------------
 
 problem     heated-plate
-geometry    path/to/geometry-file
+geometry    geometries/heated-plate.pgm
 
 #--------------------------------------------
 #               PRECICE
