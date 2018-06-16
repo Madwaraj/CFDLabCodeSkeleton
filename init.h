@@ -1,5 +1,4 @@
-#ifndef __INIT_H_
-#define __INIT_H_
+
 /**
  * This operation initializes all the local variables reading a configuration
  * file. For every variable a macro like READ_INT() is called passing it the
@@ -58,8 +57,6 @@ void read_parameters( const char *szFileName,       /* name of the file */
                     double *VI,                /* velocity y-direction */
                     double *PI,                /* pressure */
        		    double *TI,
-		    double *T_h,
-		    double *T_c,
 		    double *beta,
 		    double *dx,                /* length of a cell x-dir. */
                     double *dy,               /* length of a cell y-dir. */
@@ -115,6 +112,4 @@ void forbid_assert(int imax, int jmax, int **pic);
 
 void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag, int *num_coupling_cells);
 
-/*int num_coupling( char* geometry, int imax, int jmax);*/
-#endif
-
+int num_coupling( char* geometry, int imax, int jmax);

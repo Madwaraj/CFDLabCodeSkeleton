@@ -97,8 +97,6 @@ int main(int argn, char** args) {
 	double dt_value; /* time for output */
 	double Pr;
 	double TI;
-	double T_h;
-	double T_c;
 	double beta;
 	double x_origin;
 	double y_origin;
@@ -111,7 +109,7 @@ int main(int argn, char** args) {
 	//Read and assign the parameter values from file
 	read_parameters(filename, &imax, &jmax, &xlength, &ylength, &dt, &t_end,
 			&tau, &dt_value, &eps, &omg, &alpha, &itermax, &GX, &GY, &Re, &Pr,
-			&UI, &VI, &PI, &TI, &T_h, &T_c, &beta, &dx, &dy, problem, geometry, precice_config, participant_name, mesh_name, read_data_name, write_data_name);
+			&UI, &VI, &PI, &TI, &beta, &dx, &dy, problem, geometry, precice_config, participant_name, mesh_name, read_data_name, write_data_name);
             precice_config = "/home/parallels/Downloads/resources_WS4/precice-configs/precice_config_plate_explicit.xml";
 
  			participant_name = "Fluid";
@@ -195,7 +193,7 @@ int main(int argn, char** args) {
 
 		boundaryvalues(imax, jmax, U, V, flag);
 
-        calculate_temp(T, T1, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag, TI, T_h, T_c, select);
+        calculate_temp(T, T1, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag, TI, select);
 
 		//Used only if inflow BCs are set in PGM
 		spec_boundary_val(imax, jmax, U, V, flag);

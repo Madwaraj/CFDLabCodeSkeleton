@@ -21,7 +21,7 @@ double *Re, /* reynolds number   */
 double *Pr, double *UI, /* velocity x-direction */
 double *VI, /* velocity y-direction */
 double *PI, /* pressure */
-double *TI, double *T_h, double *T_c, double *beta, double *dx, /* length of a cell x-dir. */
+double *TI, double *beta, double *dx, /* length of a cell x-dir. */
 double *dy, /* length of a cell y-dir. */
 char *problem, char *geometry,char *precice_config, char *participant_name, char *mesh_name, char *read_data_name, char *write_data_name
 ) {
@@ -54,8 +54,6 @@ char *problem, char *geometry,char *precice_config, char *participant_name, char
 	READ_DOUBLE(szFileName, *VI);
 	READ_DOUBLE(szFileName, *PI);
 	READ_DOUBLE(szFileName, *TI);
-	READ_DOUBLE(szFileName, *T_h);
-	READ_DOUBLE(szFileName, *T_c);
 	READ_DOUBLE(szFileName, *beta);
 
 	READ_STRING(szFileName, problem);
@@ -249,7 +247,6 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 
 }
 
-/*
 int num_coupling( char* geometry, int imax, int jmax)
 {
 	int **pic = imatrix(0,imax-1,0,jmax-1);
@@ -268,4 +265,3 @@ int num_coupling( char* geometry, int imax, int jmax)
 
 return counter;
 }
-*/
