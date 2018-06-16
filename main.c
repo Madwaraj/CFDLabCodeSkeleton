@@ -2,6 +2,7 @@
 #include "visual.h"
 #include "init.h"
 #include"uvp.h"
+#include "precice_adapter.h"
 #include"boundary_val.h"
 #include"sor.h"
 #include <stdio.h>
@@ -44,20 +45,16 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 int main(int argn, char** args) {
-
-	printf("Start of Run... \n");
-	printf("Assignment-4, Group F \n");
-	printf("Please select the problem from the list below by typing 1-4 \n");
-	printf("P1: Forced Convection Over a Heated Plate \n");
-	printf("P2: Natural Convection In Cavity With Heat-Conducting Walls \n");
-	printf("P3: F1-2D Heat Exchanger \n");
-	printf("P4: F2-2D Heat Exchanger \n");
 	int select;
 	char* geometry = (char*) (malloc(sizeof(char) * 6));
-	char* problem = (char*) (malloc(sizeof(char) * 2));
-	scanf("%d", &select);
+        char problem[10] = "convection";
+	char *filename = malloc(strlen(problem) + 5);
+
+			strcpy(filename, problem);
+	                strcat(filename, ".dat");
+	//scanf("%d", &select);
 	//select problem
-	const char* filename = "0";
+/*	const char* filename = "0";
 	switch (select) {
 	case 1:
 		filename = "configs/heated-plate.dat";
@@ -75,7 +72,7 @@ int main(int argn, char** args) {
 		filename = "configs/F2-heat-exchange.dat";
 		break;
 	}
-
+*/
 	//define parameter variables
 	double Re; /* reynolds number   */
 	double UI; /* velocity x-direction */
@@ -103,15 +100,29 @@ int main(int argn, char** args) {
 	double T_h;
 	double T_c;
 	double beta;
-
+	double x_origin;
+	double y_origin;
+	double *temperature;
+        char *precice_config;
+ 	char *participant_name;
+	char *mesh_name;
+	char *read_data_name;
+	char *write_data_name;
 	//Read and assign the parameter values from file
 	read_parameters(filename, &imax, &jmax, &xlength, &ylength, &dt, &t_end,
 			&tau, &dt_value, &eps, &omg, &alpha, &itermax, &GX, &GY, &Re, &Pr,
-			&UI, &VI, &PI, &TI, &T_h, &T_c, &beta, &dx, &dy, problem, geometry);
+			&UI, &VI, &PI, &TI, &T_h, &T_c, &beta, &dx, &dy, problem, geometry, precice_config, participant_name, mesh_name, read_data_name, write_data_name);
+            precice_config = "/home/parallels/Downloads/resources_WS4/precice-configs/precice_config_plate_explicit.xml";
+
+ 			participant_name = "Fluid";
+			mesh_name = "Fluid-Mesh";
+			read_data_name = "Heat-Flux";
+			write_data_name = "Temperature";
+
 
     precicec_createSolverInterface(participant_name, precice_config, 0, 1);
     
-    int dim = precicec_getDimensions;
+    int dim = precicec_getDimensions();
 	//include_temp =1 => include temperature equations for solving
 	int include_temp = 1;
 
@@ -127,7 +138,11 @@ int main(int argn, char** args) {
 	int **flag = imatrix(0, imax + 1, 0, jmax + 1);
 	double **T;
 	double **T1;
-	int num_coupling_cells; //Number of Coupling Cells
+//	int num_coupling_cells = num_coupling(geometry,imax,jmax);; //Number of Coupling Cells
+
+    int meshID = precicec_getMeshID(mesh_name);
+    int num_coupling_cells = num_coupling(geometry,imax,jmax);
+
 		T = matrix(0, imax + 1, 0, jmax + 1);
 		T1 = matrix(0, imax + 1, 0, jmax + 1);
     
@@ -135,8 +150,7 @@ int main(int argn, char** args) {
 
 	//Initilize flags and get count of num_coupling_cells
 	init_flag(problem, geometry, imax, jmax, flag, &num_coupling_cells);
-    int meshID = precicec_getMeshID(mesh_name);
-    int num_coupling_cells = num_coupling(geometry,imax,jmax);
+   
     
 	//Initialise vertices for preCICE with num_coupling_cells from init_flag
 	int* vertexIDs = (int*) malloc(num_coupling_cells * sizeof(int));
@@ -224,7 +238,6 @@ int main(int argn, char** args) {
 	}
     precicec_finalize();
 
-	fclose(fp_log);
 	printf("PROGRESS: flow simulation completed...\n \n");
 
 	printf("PROGRESS: Freeing allocated memory...\n");

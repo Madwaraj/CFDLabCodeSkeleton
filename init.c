@@ -23,8 +23,7 @@ double *VI, /* velocity y-direction */
 double *PI, /* pressure */
 double *TI, double *T_h, double *T_c, double *beta, double *dx, /* length of a cell x-dir. */
 double *dy, /* length of a cell y-dir. */
-char *problem, char *geometry
-
+char *problem, char *geometry,char *precice_config, char *participant_name, char *mesh_name, char *read_data_name, char *write_data_name
 ) {
 	printf("PROGRESS: Reading .dat file... \n");
 	//READ_STRING( szFileName, *problem );
@@ -248,4 +247,23 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 	free_imatrix(pic, 0, imax + 1, 0, jmax + 1);
 	printf("PROGRESS: flags set using .pgm file. num_coupling_cells assigned.\n \n");
 
+}
+
+int num_coupling( char* geometry, int imax, int jmax)
+{
+	int **pic = imatrix(0,imax-1,0,jmax-1);
+	pic = read_pgm(geometry);
+
+	int counter = 0;
+
+		for (int i=0; i<imax; i++) {
+		for (int j=0; j<jmax; j++) {
+
+		if (pic[i][j] == 9)
+		counter++;
+
+					   }	
+					   }
+
+return counter;
 }
