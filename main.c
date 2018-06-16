@@ -153,21 +153,21 @@ int main(int argn, char** args) {
    
     
 	//Initialise vertices for preCICE with num_coupling_cells from init_flag
-	int* vertexIDs = (int*) malloc(num_coupling_cells * sizeof(int));
-	vertexIDs=precice_set_interface_vertices(imax,jmax,dx,dy,x_origin,y_origin,num_coupling_cells,temperature,flag,vertexIDs);
+
+        int *vertexIDs = precice_set_interface_vertices(imax,jmax,dx,dy,x_origin,y_origin,num_coupling_cells,meshID,flag);
 	//Initialize the U, V and P
     
     int temperatureID = precicec_getDataID(write_data_name, meshID);
     double* temperatureCoupled = (double*) malloc(sizeof(double) * num_coupling_cells);
     
     int heatFluxID = precicec_getDataID(read_data_name, meshID);
-    double* heatfluxCoupled = (double*) malloc(sizeof(double) * num_coupling_cells);
+    double* heatflux = (double*) malloc(sizeof(double) * num_coupling_cells);
     
     double precice_dt = precicec_initialize();
     
-    precice_write_temperature(imax, jmax, num_coupling_cells, *temperature, *vertexIDs, temperatureID, **T, **flag);
+    precice_write_temperature(imax, jmax, num_coupling_cells, temperature, vertexIDs, temperatureID, T, flag);
     precicec_initialize_data();
-    precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs, heatfluxCoupled);
+    precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs, heatflux);
     
 		init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
 
@@ -200,7 +200,7 @@ int main(int argn, char** args) {
 		//Used only if inflow BCs are set in PGM
 		spec_boundary_val(imax, jmax, U, V, flag);
         
-        set_coupling_boundary();
+        set_coupling_boundary(imax, jmax, dx, dy, heatflux, T, flag);
 		
         calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G, flag, beta, T, include_temp);
 
@@ -221,9 +221,9 @@ int main(int argn, char** args) {
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, flag);
         
-        precice_write_temperature(imax, jmax, num_coupling_cells, *temperature, *vertexIDs, temperatureID, **T, **flag);
+        precice_write_temperature(imax, jmax, num_coupling_cells, temperature, vertexIDs, temperatureID, T, flag);
         precice_dt = precicec_advance(dt);
-        precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs, heatfluxCoupled);
+        precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs, heatflux);
 
 		if ((t >= n1 * dt_value) && (t != 0.0)) {
 			write_vtkFile(sol_directory, n, xlength, ylength, imax, jmax, dx,
@@ -252,7 +252,7 @@ int main(int argn, char** args) {
 		free_matrix(T, 0, imax + 1, 0, jmax + 1);
 		free_matrix(T1, 0, imax + 1, 0, jmax + 1);
 	free(geometry);
-	free(problem);
+	
 	printf("PROGRESS: allocated memory released...\n \n");
 
 	printf("PROGRESS: End of Run.\n");

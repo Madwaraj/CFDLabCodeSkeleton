@@ -1,13 +1,15 @@
 #include "precice_adapter.h"
-#include "boundary_val.c"
+
+#include "adapters/c/SolverInterfaceC.h"
+#include <stdlib.h>
 
 int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		double x_origin, double y_origin, int num_coupling_cells, int meshID,
-		int **flag, int* vertexIDs) {
+		int **flag) {
 	int dimension = 3;
 	int coupledcell = 0;
-	double* vertices = (double*) malloc(
-			sizeof(double) * num_coupling_cells * dimension);
+	double* vertices = (double*)malloc(sizeof(double) * num_coupling_cells * dimension);
+	int* vertexIDs = (int*)malloc(num_coupling_cells * sizeof(int));
 
 	for (int j = 1; j < jmax + 1; j++) {
 		if (~(flag[imax + 1][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
@@ -47,7 +49,6 @@ int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		}
 	}
 	precicec_setMeshVertices(meshID, num_coupling_cells, vertices, vertexIDs);
-	free(vertices);
 	return vertexIDs;
 }
 
@@ -93,7 +94,7 @@ void precice_write_temperature(int imax, int jmax, int num_coupling_cells,
 void write_checkpoint(double time, double **U, double **V, double **T,
 		double *time_cp, double **U_cp, double **V_cp, double **T_cp, int imax,
 		int jmax) {
-	time_cp = time;
+	time_cp = &time;
 
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
@@ -108,7 +109,7 @@ void restore_checkpoint(double *time, double **U, double **V, double **T,
 		double time_cp, double **U_cp, double **V_cp, double **T_cp, int imax,
 		int jmax) {
 
-	time = time_cp;
+	time = &time_cp;
 
 	for (int i = 1; i <= imax; i++) {
 		for (int j = 1; j <= jmax; j++) {
@@ -155,4 +156,3 @@ void set_coupling_boundary(int imax, int jmax, double dx, double dy,
 		}
 	}
 }
-
