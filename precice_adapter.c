@@ -47,6 +47,7 @@ int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		}
 	}
 	precicec_setMeshVertices(meshID, num_coupling_cells, vertices, vertexIDs);
+	free(vertices);
 	return vertexIDs;
 }
 
@@ -114,6 +115,43 @@ void restore_checkpoint(double *time, double **U, double **V, double **T,
 			T[i][j] = T_cp[i][j];
 			U[i][j] = U_cp[i][j];
 			V[i][j] = V_cp[i][j];
+		}
+	}
+}
+
+void set_coupling_boundary(int imax, int jmax, double dx, double dy,
+		double *heatflux, double **T, int **flag) {
+	int count = 0;
+
+	for (int j = 1; j < jmax + 1; j++) {
+		if (~(flag[imax + 1][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
+				&& (flag[imax + 1][j] & 1 << 8)) { // Right boundary
+			T[imax+1][j] = T[imax][j]+(dx*heatflux[count]);
+			count++;
+		}
+	}
+
+	for (int j = 1; j < jmax + 1; j++) {
+		if (~(flag[0][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
+				&& (flag[0][j] & 1 << 7)) { // Left boundary
+			T[0][j] = T[1][j]+(dx*heatflux[count]);
+			count++;
+		}
+	}
+
+	for (int i = 1; i < imax + 1; i++) {
+		if (~(flag[i][0] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
+				&& (flag[i][0] & 1 << 6)) { // Bottom boundary
+			T[i][0] = T[i][1]+(dy*heatflux[count]);
+			count++;
+		}
+	}
+
+	for (int i = 1; i < imax + 1; i++) {
+		if (~(flag[i][jmax + 1] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
+				&& (flag[i][jmax + 1] & 1 << 5)) { // Top boundary
+			T[i][jmax+1] = T[i][jmax]+(dy*heatflux[count]);
+			count++;
 		}
 	}
 }
