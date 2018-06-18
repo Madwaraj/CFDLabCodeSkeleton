@@ -56,8 +56,8 @@ char *problem, char *geometry,char *precice_config, char *participant_name, char
 	READ_DOUBLE(szFileName, *TI);
 	READ_DOUBLE(szFileName, *beta);
 
-	READ_STRING(szFileName, problem);
-	READ_STRING(szFileName, geometry);
+	/*READ_STRING(szFileName, problem);
+	READ_STRING(szFileName, geometry);*/
 
 	*dx = *xlength / (double) (*imax);
 	*dy = *ylength / (double) (*jmax);
