@@ -47,11 +47,10 @@
 int main(int argn, char** args) {
 	int select;
 	//char* geometry = (char*) (malloc(sizeof(char) * 6));
-	char problem[10] = "convection";
 	char *filename = "configs/convection.dat";
 
 	/*strcpy(filename, problem);
-	strcat(filename, ".dat");*/
+	 strcat(filename, ".dat");*/
 	//scanf("%d", &select);
 	//select problem
 	/*	const char* filename = "0";
@@ -98,33 +97,30 @@ int main(int argn, char** args) {
 	double Pr;
 	double TI;
 	double beta;
-	char *geometry="geometries/convection.pgm";
 	double x_origin;
 	double y_origin;
 	double *temperature;
-	char *precice_config;
-	char *participant_name;
-	char *mesh_name;
-	char *read_data_name;
-	char *write_data_name;
+	char *problem = (char*) malloc(100 * sizeof(char));
+	char *geometry = (char*) malloc(100 * sizeof(char));
+	char *precice_config = (char*) malloc(100 * sizeof(char));
+	char *participant_name = (char*) malloc(100 * sizeof(char));
+	char *mesh_name = (char*) malloc(100 * sizeof(char));
+	char *read_data_name = (char*) malloc(100 * sizeof(char));
+	char *write_data_name = (char*) malloc(100 * sizeof(char));
 	//Read and assign the parameter values from file
 	read_parameters(filename, &imax, &jmax, &xlength, &ylength, &dt, &t_end,
 			&tau, &dt_value, &eps, &omg, &alpha, &itermax, &GX, &GY, &Re, &Pr,
 			&UI, &VI, &PI, &TI, &beta, &dx, &dy, problem, geometry,
 			precice_config, participant_name, mesh_name, read_data_name,
 			write_data_name);
-	precice_config =
-			"precice-configs/precice_config_plate_explicit.xml";
-
-	participant_name = "Fluid";
-	mesh_name = "Fluid-Mesh";
-	read_data_name = "Heat-Flux";
-	write_data_name = "Temperature";
-
 	//include_temp =1 => include temperature equations for solving
 	int include_temp = 1;
 
-	printf("1st checkpoint");
+	printf("1st checkpoint\n");
+	printf(
+			"geometry=%s\n precice_config=%s\n participant_name=%s\n mesh_name=%s\n read_data_name=%s\n write_data_name=%s\n",
+			geometry, precice_config, participant_name, mesh_name,
+			read_data_name, write_data_name);
 	//Allocate the matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	printf("PROGRESS: Starting matrix allocation... \n");
 	double **P = matrix(0, imax + 1, 0, jmax + 1);
@@ -141,7 +137,7 @@ int main(int argn, char** args) {
 	precicec_createSolverInterface(participant_name, precice_config, 0, 1);
 	int dim = precicec_getDimensions();
 	int meshID = precicec_getMeshID(mesh_name);
-	int num_coupling_cells = num_coupling(geometry, imax, jmax);
+	int num_coupling_cells;
 
 	T = matrix(0, imax + 1, 0, jmax + 1);
 	T1 = matrix(0, imax + 1, 0, jmax + 1);

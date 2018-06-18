@@ -24,13 +24,13 @@ jmax		40
 #--------------------------------------------
 
 problem     convection
-geometry    path/to/geometry-file
+geometry    geometries/convection.pgm
 
 #--------------------------------------------
 #               PRECICE
 #--------------------------------------------
 
-precice_config		path/to/precice-config.xml
+precice_config		precice-configs/precice_config_plate_explicit.xml
 participant_name	Fluid
 mesh_name			Fluid-Mesh
 read_data_name		Heat-Flux

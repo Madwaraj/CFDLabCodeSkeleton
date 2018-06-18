@@ -70,6 +70,8 @@ void read_parameters( const char *szFileName,       /* name of the file */
 
 );
 
+void asgnNewStr(char *readValue, char *valueToUpdate);
+
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on
  * the whole domain.

@@ -23,11 +23,18 @@ double *VI, /* velocity y-direction */
 double *PI, /* pressure */
 double *TI, double *beta, double *dx, /* length of a cell x-dir. */
 double *dy, /* length of a cell y-dir. */
-char *problem, char *geometry,char *precice_config, char *participant_name, char *mesh_name, char *read_data_name, char *write_data_name
-) {
+char *problemP, char *geometryP, char *precice_configP, char *participant_nameP,
+		char *mesh_nameP, char *read_data_nameP, char *write_data_nameP) {
 	printf("PROGRESS: Reading .dat file... \n");
 	//READ_STRING( szFileName, *problem );
 	//READ_STRING( szFileName, geometry );
+	char *problem = (char*) malloc(100 * sizeof(char));
+	char *geometry = (char*)malloc(100 * sizeof(char));
+	char *precice_config = (char*) malloc(100 * sizeof(char));
+	char *participant_name = (char*) malloc(100 * sizeof(char));
+	char *mesh_name = (char*) malloc(100 * sizeof(char));
+	char *read_data_name = (char*) malloc(100 * sizeof(char));
+	char *write_data_name = (char*) malloc(100 * sizeof(char));
 
 	READ_INT(szFileName, *imax);
 	READ_INT(szFileName, *jmax);
@@ -56,14 +63,43 @@ char *problem, char *geometry,char *precice_config, char *participant_name, char
 	READ_DOUBLE(szFileName, *TI);
 	READ_DOUBLE(szFileName, *beta);
 
-	/*READ_STRING(szFileName, problem);
-	READ_STRING(szFileName, geometry);*/
+	READ_STRING(szFileName, problem);
+	asgnNewStr(problem, problemP);
+
+	READ_STRING(szFileName, geometry);
+	asgnNewStr(geometry,geometryP);
+
+	READ_STRING(szFileName, precice_config);
+	asgnNewStr(precice_config, precice_configP);
+
+	READ_STRING(szFileName, participant_name);
+	asgnNewStr(participant_name, participant_nameP);
+
+	READ_STRING(szFileName, mesh_name);
+	asgnNewStr(mesh_name, mesh_nameP);
+
+	READ_STRING(szFileName, read_data_name);
+	asgnNewStr(read_data_name, read_data_nameP);
+
+	READ_STRING(szFileName, write_data_name);
+	asgnNewStr(write_data_name, write_data_nameP);
 
 	*dx = *xlength / (double) (*imax);
 	*dy = *ylength / (double) (*jmax);
 
 	printf("PROGRESS: .dat file read... \n \n");
 
+}
+
+void asgnNewStr(char *readValue, char *valueToUpdate) {
+	int l = strlen(readValue);
+	//printf("l from func:%d readValue=%s\n", l, readValue);
+	valueToUpdate = realloc(valueToUpdate, sizeof(char) * l);
+	valueToUpdate = memcpy(valueToUpdate, readValue, sizeof(char) * l);
+	/*for(int i=0;i<l;i++) {
+	 valueToUpdate[i]=readValue[i];
+	 printf("valueToUpdate[%d]=%c, readValue[%d]=%c \n",i,valueToUpdate[i],i,readValue[i]);
+	 }*/
 }
 
 void init_uvp(double UI, double VI, double PI, int imax, int jmax, double** U,
@@ -243,25 +279,26 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 	}
 	*num_coupling_cells = NumCoupCells;
 	free_imatrix(pic, 0, imax + 1, 0, jmax + 1);
-	printf("PROGRESS: flags set using .pgm file. num_coupling_cells assigned.\n \n");
+	printf(
+			"PROGRESS: flags set using .pgm file. num_coupling_cells assigned.\n \n");
 
 }
 
-int num_coupling( char* geometry, int imax, int jmax)
-{
-	int **pic = imatrix(0,imax-1,0,jmax-1);
-	pic = read_pgm(geometry);
+/*int num_coupling( char* geometry, int imax, int jmax)
+ {
+ int **pic = imatrix(0,imax-1,0,jmax-1);
+ pic = read_pgm(geometry);
 
-	int counter = 0;
+ int counter = 0;
 
-		for (int i=0; i<imax; i++) {
-		for (int j=0; j<jmax; j++) {
+ for (int i=0; i<imax; i++) {
+ for (int j=0; j<jmax; j++) {
 
-		if (pic[i][j] == 9)
-		counter++;
+ if (pic[i][j] == 9)
+ counter++;
 
-					   }	
-					   }
+ }
+ }
 
-return counter;
-}
+ return counter;
+ }*/
