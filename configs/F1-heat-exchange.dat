@@ -24,7 +24,7 @@ jmax		58
 #--------------------------------------------
 
 problem     F1-heat-exchange
-geometry    NS/geometries/F1-heat-exchange_82x60.pgm
+geometry    geometries/F1-heat-exchange_82x60.pgm
 
 #--------------------------------------------
 #               PRECICE

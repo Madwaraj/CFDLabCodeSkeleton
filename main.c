@@ -47,7 +47,7 @@
 int main(int argn, char** args) {
 	int select;
 	//char* geometry = (char*) (malloc(sizeof(char) * 6));
-	char *filename = "configs/convection.dat";
+	char *filename = "configs/heated-plate.dat";
 
 	/*strcpy(filename, problem);
 	 strcat(filename, ".dat");*/
@@ -116,11 +116,11 @@ int main(int argn, char** args) {
 	//include_temp =1 => include temperature equations for solving
 	int include_temp = 1;
 
-	printf("1st checkpoint\n");
-	printf(
-			"geometry=%s\n precice_config=%s\n participant_name=%s\n mesh_name=%s\n read_data_name=%s\n write_data_name=%s\n",
-			geometry, precice_config, participant_name, mesh_name,
-			read_data_name, write_data_name);
+	/*printf("1st checkpoint\n");
+	 printf(
+	 "geometry=%s\n precice_config=%s\n participant_name=%s\n mesh_name=%s\n read_data_name=%s\n write_data_name=%s\n",
+	 geometry, precice_config, participant_name, mesh_name,
+	 read_data_name, write_data_name);*/
 	//Allocate the matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	printf("PROGRESS: Starting matrix allocation... \n");
 	double **P = matrix(0, imax + 1, 0, jmax + 1);
@@ -132,12 +132,10 @@ int main(int argn, char** args) {
 	int **flag = imatrix(0, imax + 1, 0, jmax + 1);
 	double **T;
 	double **T1;
-//	int num_coupling_cells = num_coupling(geometry,imax,jmax);; //Number of Coupling Cells
 
 	precicec_createSolverInterface(participant_name, precice_config, 0, 1);
 	int dim = precicec_getDimensions();
 	int meshID = precicec_getMeshID(mesh_name);
-	int num_coupling_cells;
 
 	T = matrix(0, imax + 1, 0, jmax + 1);
 	T1 = matrix(0, imax + 1, 0, jmax + 1);
@@ -145,8 +143,9 @@ int main(int argn, char** args) {
 	printf("PROGRESS: Matrices allocated on heap... \n \n");
 
 	//Initilize flags and get count of num_coupling_cells
+	int num_coupling_cells;
 	init_flag(problem, geometry, imax, jmax, flag, &num_coupling_cells);
-
+	printf("num_coupling_cells=%d \n", num_coupling_cells);
 	//Initialise vertices for preCICE with num_coupling_cells from init_flag
 
 	int *vertexIDs = precice_set_interface_vertices(imax, jmax, dx, dy,
@@ -161,7 +160,7 @@ int main(int argn, char** args) {
 	double* heatflux = (double*) malloc(sizeof(double) * num_coupling_cells);
 
 	double precice_dt = precicec_initialize();
-
+	printf("PROGRESS:precicec_initialize... \n \n");
 	precice_write_temperature(imax, jmax, num_coupling_cells, temperature,
 			vertexIDs, temperatureID, T, flag);
 	precicec_initialize_data();

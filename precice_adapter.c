@@ -2,6 +2,7 @@
 
 #include "adapters/c/SolverInterfaceC.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		double x_origin, double y_origin, int num_coupling_cells, int meshID,
@@ -50,6 +51,7 @@ int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 	}
 	precicec_setMeshVertices(meshID, num_coupling_cells, vertices, vertexIDs);
 	return vertexIDs;
+	printf("retrieved VertexIDs. Last ID=%d",vertexIDs[num_coupling_cells-1]);
 }
 
 void precice_write_temperature(int imax, int jmax, int num_coupling_cells,
