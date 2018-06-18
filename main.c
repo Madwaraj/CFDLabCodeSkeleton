@@ -123,13 +123,13 @@ int main(int argn, char** args) {
 	 read_data_name, write_data_name);*/
 	//Allocate the matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	printf("PROGRESS: Starting matrix allocation... \n");
-	double **P = matrix(0, imax + 1, 0, jmax + 1);
-	double **U = matrix(0, imax + 1, 0, jmax + 1);
-	double **V = matrix(0, imax + 1, 0, jmax + 1);
-	double **F = matrix(0, imax + 1, 0, jmax + 1);
-	double **G = matrix(0, imax + 1, 0, jmax + 1);
-	double **RS = matrix(0, imax + 1, 0, jmax + 1);
-	int **flag = imatrix(0, imax + 1, 0, jmax + 1);
+	double **P = matrix(0, imax - 1, 0, jmax - 1);
+	double **U = matrix(0, imax - 1, 0, jmax - 1);
+	double **V = matrix(0, imax - 1, 0, jmax - 1);
+	double **F = matrix(0, imax - 1, 0, jmax - 1);
+	double **G = matrix(0, imax - 1, 0, jmax - 1);
+	double **RS = matrix(0, imax - 1, 0, jmax - 1);
+	int **flag = imatrix(0, imax - 1, 0, jmax - 1);
 	double **T;
 	double **T1;
 
@@ -137,8 +137,8 @@ int main(int argn, char** args) {
 	int dim = precicec_getDimensions();
 	int meshID = precicec_getMeshID(mesh_name);
 
-	T = matrix(0, imax + 1, 0, jmax + 1);
-	T1 = matrix(0, imax + 1, 0, jmax + 1);
+	T = matrix(0, imax - 1, 0, jmax - 1);
+	T1 = matrix(0, imax - 1, 0, jmax - 1);
 
 	printf("PROGRESS: Matrices allocated on heap... \n \n");
 
@@ -163,10 +163,12 @@ int main(int argn, char** args) {
 	printf("PROGRESS:precicec_initialize... \n \n");
 	precice_write_temperature(imax, jmax, num_coupling_cells, temperature,
 			vertexIDs, temperatureID, T, flag);
+        printf("precice_write_temperature done\n\n");
 	precicec_initialize_data();
+        printf("precice_initialize_data done\n\n");
 	precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs,
 			heatflux);
-
+        printf("precice_readscalarblockdata done\n\n");
 	init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
 
 	//Make solution folder
@@ -187,30 +189,32 @@ int main(int argn, char** args) {
 	int n1 = 0;
 
 	while (precicec_isCouplingOngoing()) {
-
+        printf("Starting to calculate dt\n\n");
 		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V, Pr, include_temp);
-		printf("t = %f ,dt = %f, ", t, dt);
-
-		boundaryvalues(imax, jmax, U, V, flag);
-
-		calculate_temp(T, T1, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag,
-				TI, select);
+	dt = fmin(dt, precice_dt);
+	printf("dt calculated\n\n\n");
+		printf("t = %lf, dt = %lf, \n\n",t, dt);
 
 		//Used only if inflow BCs are set in PGM
 		spec_boundary_val(imax, jmax, U, V, flag);
 
-		set_coupling_boundary(imax, jmax, dx, dy, heatflux, T, flag);
+		boundaryvalues(imax, jmax, U, V, flag);
 
+		set_coupling_boundary(imax, jmax, dx, dy, heatflux, T, flag);
+		
+		calculate_temp(T, T1, Pr, Re, imax, jmax, dx, dy, dt, alpha, U, V, flag,
+				TI, select);
+		printf("Calculated Temperature\n\n");
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G,
 				flag, beta, T, include_temp);
-
+		printf("Calculated RHS\n\n");
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS, flag);
 
 		int it = 0;
 		double res = 10.0;
 
 		do {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res, flag);
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, flag, UI);
 			++it;
 
 		} while (it < itermax && res > eps);
@@ -244,15 +248,15 @@ int main(int argn, char** args) {
 
 	printf("PROGRESS: Freeing allocated memory...\n");
 	//Free memory
-	free_matrix(P, 0, imax + 1, 0, jmax + 1);
-	free_matrix(U, 0, imax + 1, 0, jmax + 1);
-	free_matrix(V, 0, imax + 1, 0, jmax + 1);
-	free_matrix(F, 0, imax + 1, 0, jmax + 1);
-	free_matrix(G, 0, imax + 1, 0, jmax + 1);
-	free_matrix(RS, 0, imax + 1, 0, jmax + 1);
-	free_imatrix(flag, 0, imax + 1, 0, jmax + 1);
-	free_matrix(T, 0, imax + 1, 0, jmax + 1);
-	free_matrix(T1, 0, imax + 1, 0, jmax + 1);
+	free_matrix(P, 0, imax - 1, 0, jmax - 1);
+	free_matrix(U, 0, imax - 1, 0, jmax - 1);
+	free_matrix(V, 0, imax - 1, 0, jmax - 1);
+	free_matrix(F, 0, imax - 1, 0, jmax - 1);
+	free_matrix(G, 0, imax - 1, 0, jmax - 1);
+	free_matrix(RS, 0, imax - 1, 0, jmax - 1);
+	free_imatrix(flag, 0, imax - 1, 0, jmax - 1);
+	free_matrix(T, 0, imax - 1, 0, jmax - 1);
+	free_matrix(T1, 0, imax - 1, 0, jmax - 1);
 	free(geometry);
 
 	printf("PROGRESS: allocated memory released...\n \n");

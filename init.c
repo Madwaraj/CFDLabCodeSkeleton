@@ -106,8 +106,8 @@ void init_uvp(double UI, double VI, double PI, int imax, int jmax, double** U,
 		double** V, double** P, int** flag) {
 	printf("PROGRESS: Starting initialization of U,V,P ... \n");
 
-	for (int i = 0; i < imax + 2; i++) {
-		for (int j = 0; j < jmax + 2; j++) {
+	for (int i = 0; i < imax; i++) {
+		for (int j = 0; j < jmax ; j++) {
 			if (flag[i][j] & (1 << 0)) {
 
 				U[i][j] = UI;
@@ -123,8 +123,8 @@ void init_uvpt(double UI, double VI, double PI, double TI, int imax, int jmax,
 		double** U, double** V, double** P, double** T, int** flag) {
 	printf("PROGRESS: Starting initialization of U,V,P,T ... \n");
 
-	for (int i = 0; i < imax + 2; i++) {
-		for (int j = 0; j < jmax + 2; j++) {
+	for (int i = 0; i < imax ; i++) {
+		for (int j = 0; j < jmax ; j++) {
 			if (flag[i][j] & (1 << 0)) {
 
 				U[i][j] = UI;
@@ -170,7 +170,7 @@ int forbidden_TB(int **pic, int i, int j) {
 }
 
 //Avoids any forbidden configuration
-void forbid_assert(int imax, int jmax, int **pic) {
+/*void forbid_assert(int imax, int jmax, int **pic) {
 	//inner obstacles
 	for (int i = 1; i < imax + 1; i++) {
 		for (int j = 1; j < jmax + 1; j++) {
@@ -215,16 +215,70 @@ void forbid_assert(int imax, int jmax, int **pic) {
 	}
 
 }
+*/
 
+void forbid_assert(int imax, int jmax, int **pic)
+{
+int **pic1 = imatrix(0, imax+1, 0, jmax+1);
+init_imatrix( pic1, 0, imax+1, 0, jmax+1, 0); 
+int counter = 0;
+
+    for(int i=1; i<=imax; i++)
+    {
+        for(int j=1; j<=jmax; j++)
+        {
+            pic1[i][j] = pic[i-1][j-1];
+        }
+    }
+
+    //Checking forbidden configuration
+    for(int i=1; i<=imax ; i++)
+    {
+
+        for(int j=1; j<=jmax; j++)
+        {
+
+            counter = 0;
+            if(pic1[i][j] != 6 && pic1[i][j] != 3 && pic1[i][j] != 2)
+	    {
+            if((pic1[i+1][j] == 6) || (pic1[i+1][j] == 3) || (pic1[i+1][j] == 2))
+            {
+            counter++;   
+            }
+            if((pic1[i-1][j] == 6) || (pic1[i-1][j] == 3) || (pic1[i-1][j] == 2))
+            {
+            counter++;   
+            }
+            if((pic1[i][j+1] == 6) || (pic1[i][j+1] == 3) || (pic1[i][j+1] == 2))
+            {
+            counter++;   
+            }
+            if((pic1[i][j-1] == 6) || (pic1[i][j-1] == 3) || (pic1[i][j-1] == 2))
+            {
+            counter++;   
+            }
+	    }
+
+        //    if(counter > 2)
+         //   {
+        //    assert_error();
+        //    }
+
+
+        }
+    }
+}
 void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 		int *num_coupling_cells) {
 	printf("PROGRESS: Setting flags... \n");
-	int **pic = imatrix(0, imax + 1, 0, jmax + 1);
+	int **pic = imatrix(0, imax - 1, 0, jmax - 1);
 	int NumCoupCells = 0;
 	pic = read_pgm(geometry);
+
 	forbid_assert(imax, jmax, pic); //Checks for disallowed geometries
-	for (int i = 0; i < imax + 2; i++) {
-		for (int j = 0; j < jmax + 2; j++) {
+         printf("Almost done \n\n\n");
+	for (int i = 0; i < imax ; i++) {
+		for (int j = 0; j < jmax ; j++) {
 
 			flag[i][j] = 0;
 
@@ -260,13 +314,13 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 			if (!isfluid(pic[i][j])) //set neighbors if not fluid
 					{
 
-				if (i < imax + 1 && pic[i + 1][j] == 6) {
+				if (i < imax - 1 && pic[i + 1][j] == 6) {
 					flag[i][j] |= 1 << 8;  //Set B_O
 				}
 				if (i > 0 && pic[i - 1][j] == 6) {
 					flag[i][j] |= 1 << 7; //Set B_W
 				}
-				if (j < jmax + 1 && pic[i][j + 1] == 6) {
+				if (j < jmax - 1 && pic[i][j + 1] == 6) {
 					flag[i][j] |= 1 << 5; //Set B_N
 				}
 				if (j > 0 && pic[i][j - 1] == 6) {
@@ -277,28 +331,11 @@ void init_flag(char* problem, char* geometry, int imax, int jmax, int **flag,
 		}
 
 	}
+
 	*num_coupling_cells = NumCoupCells;
-	free_imatrix(pic, 0, imax + 1, 0, jmax + 1);
+
+	free_imatrix(pic, 0, imax - 1, 0, jmax - 1);
 	printf(
 			"PROGRESS: flags set using .pgm file. num_coupling_cells assigned.\n \n");
 
 }
-
-/*int num_coupling( char* geometry, int imax, int jmax)
- {
- int **pic = imatrix(0,imax-1,0,jmax-1);
- pic = read_pgm(geometry);
-
- int counter = 0;
-
- for (int i=0; i<imax; i++) {
- for (int j=0; j<jmax; j++) {
-
- if (pic[i][j] == 9)
- counter++;
-
- }
- }
-
- return counter;
- }*/

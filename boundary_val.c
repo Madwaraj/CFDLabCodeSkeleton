@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 void spec_boundary_val(int imax, int jmax, double **U, double **V, int **flag) {
-	for (int i = 0; i < imax + 2; ++i) {
-		for (int j = 0; j < jmax + 2; ++j) {
+	for (int i = 0; i < imax; ++i) {
+		for (int j = 0; j < jmax; ++j) {
 			if (flag[i][j] & (1 << 4)) {
 				U[i][j] = 1;
 				V[i][j] = 0;
@@ -47,8 +47,8 @@ int B_SW(int flag) {
 }
 
 void boundaryvalues(int imax, int jmax, double **U, double **V, int **flag) {
-	for (int i = 0; i < imax + 2; ++i) {
-		for (int j = 0; j < jmax + 2; ++j) {
+	for (int i = 0; i < imax ; ++i) {
+		for (int j = 0; j < jmax; ++j) {
 
 			switch (flag[i][j] & ((1 << 1) | (1 << 2) | (1 << 3))) {
 			case 1 << 1: //No slip conditions
@@ -168,7 +168,6 @@ void boundaryvalues(int imax, int jmax, double **U, double **V, int **flag) {
 		}
 	}
 
-	//printf("Boundary values for u,v set. \n");
-
+	printf("Boundary values for u,v set. \n");
 }
 
