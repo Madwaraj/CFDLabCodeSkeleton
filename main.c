@@ -46,7 +46,7 @@
  */
 int main(int argn, char** args) {
 	int select;
-	char* geometry = (char*) (malloc(sizeof(char) * 6));
+	//char* geometry = (char*) (malloc(sizeof(char) * 6));
         char problem[10] = "convection";
 	char *filename = malloc(strlen(problem) + 5);
 
@@ -98,6 +98,7 @@ int main(int argn, char** args) {
 	double Pr;
 	double TI;
 	double beta;
+        char *geometry;
 	double x_origin;
 	double y_origin;
 	double *temperature;
@@ -116,15 +117,12 @@ int main(int argn, char** args) {
 			mesh_name = "Fluid-Mesh";
 			read_data_name = "Heat-Flux";
 			write_data_name = "Temperature";
-
-
-    precicec_createSolverInterface(participant_name, precice_config, 0, 1);
     
-    int dim = precicec_getDimensions();
+
 	//include_temp =1 => include temperature equations for solving
 	int include_temp = 1;
 
-
+        printf("1st checkpoint");
 	//Allocate the matrices for P(pressure), U(velocity_x), V(velocity_y), F, and G on heap
 	printf("PROGRESS: Starting matrix allocation... \n");
 	double **P = matrix(0, imax + 1, 0, jmax + 1);
@@ -138,6 +136,8 @@ int main(int argn, char** args) {
 	double **T1;
 //	int num_coupling_cells = num_coupling(geometry,imax,jmax);; //Number of Coupling Cells
 
+        precicec_createSolverInterface(participant_name, precice_config, 0, 1);
+    int dim = precicec_getDimensions();
     int meshID = precicec_getMeshID(mesh_name);
     int num_coupling_cells = num_coupling(geometry,imax,jmax);
 
@@ -149,7 +149,7 @@ int main(int argn, char** args) {
 	//Initilize flags and get count of num_coupling_cells
 	init_flag(problem, geometry, imax, jmax, flag, &num_coupling_cells);
    
-    
+
 	//Initialise vertices for preCICE with num_coupling_cells from init_flag
 
         int *vertexIDs = precice_set_interface_vertices(imax,jmax,dx,dy,x_origin,y_origin,num_coupling_cells,meshID,flag);
