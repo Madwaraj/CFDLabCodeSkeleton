@@ -1,9 +1,10 @@
-# CFDLabCodeSkeleton
-Code Sceleton for the CFD Lab taught at TUM Informatics
+CFD LAB Worksheet-4 
+Group f
 
-This repository contains
+We were unable to get the fluid solver to converge. In its current state it is hard coded for the convection over a heated plate example.
 
-* a makefile
-* a parameter file
-* the headers
-* the files with the respective method stubs
+Simply make and run.
+
+
+
+
