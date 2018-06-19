@@ -136,7 +136,7 @@ int main(int argn, char** args) {
 	precicec_createSolverInterface(participant_name, precice_config, 0, 1);
 	int dim = precicec_getDimensions();
 	int meshID = precicec_getMeshID(mesh_name);
-
+	 
 	T = matrix(0, imax - 1, 0, jmax - 1);
 	T1 = matrix(0, imax - 1, 0, jmax - 1);
 
@@ -161,7 +161,7 @@ int main(int argn, char** args) {
 
 	double precice_dt = precicec_initialize();
 	printf("PROGRESS:precicec_initialize... \n \n");
-	precice_write_temperature(imax, jmax, num_coupling_cells, temperature,
+	precice_write_temperature(imax, jmax, num_coupling_cells, temperatureCoupled,
 			vertexIDs, temperatureID, T, flag);
         printf("precice_write_temperature done\n\n");
 	precicec_initialize_data();
@@ -196,7 +196,7 @@ int main(int argn, char** args) {
 		printf("t = %lf, dt = %lf, \n\n",t, dt);
 
 		//Used only if inflow BCs are set in PGM
-		spec_boundary_val(imax, jmax, U, V, flag);
+		spec_boundary_val(imax, jmax, U, V, flag, UI);
 
 		boundaryvalues(imax, jmax, U, V, flag);
 
@@ -214,7 +214,7 @@ int main(int argn, char** args) {
 		double res = 10.0;
 
 		do {
-			sor(omg, dx, dy, imax, jmax, P, RS, &res, flag, UI);
+			sor(omg, dx, dy, imax, jmax, P, RS, &res, flag);
 			++it;
 
 		} while (it < itermax && res > eps);
@@ -225,11 +225,13 @@ int main(int argn, char** args) {
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, flag);
 
-		precice_write_temperature(imax, jmax, num_coupling_cells, temperature,
+		precice_write_temperature(imax, jmax, num_coupling_cells, temperatureCoupled,
 				vertexIDs, temperatureID, T, flag);
 		precice_dt = precicec_advance(dt);
 		precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs,
 				heatflux);
+
+				
 
 		if ((t >= n1 * dt_value) && (t != 0.0)) {
 			write_vtkFile(sol_directory, n, xlength, ylength, imax, jmax, dx,

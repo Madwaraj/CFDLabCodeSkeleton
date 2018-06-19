@@ -1,11 +1,11 @@
 #include "boundary_val.h"
 #include <stdio.h>
 
-void spec_boundary_val(int imax, int jmax, double **U, double **V, int **flag) {
+void spec_boundary_val(int imax, int jmax, double **U, double **V, int **flag, double UI) {
 	for (int i = 0; i < imax; ++i) {
 		for (int j = 0; j < jmax; ++j) {
 			if (flag[i][j] & (1 << 4)) {
-				U[i][j] = 1;
+				U[i][j] = 0.1;
 				V[i][j] = 0;
 				V[i][j - 1] = 0;
 			}

@@ -12,8 +12,7 @@ void sor(
   double **P,
   double **RS,
   double *res,
-  int **flag,
-  double UI
+  int **flag
 )
 {
   int i,j;
@@ -45,8 +44,8 @@ for(int i = 0; i<imax; ++i)
 		if (flag[i][j]&(1<<3) ) P[i][j] = 0;
 
 		//Inflow
-		if (flag[i][j]&(1<<4) && UI>=0 ) P[i][j] = P[i+1][j];
-		else if (flag[i][j]&(1<<4) && UI<0) P[i][j] = P[i-1][j];
+		if (flag[i][j]&(1<<4)) P[i][j] = P[i+1][j];
+
 	}
 }
 

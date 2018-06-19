@@ -205,7 +205,7 @@ void calculate_rs(double dt, double dx, double dy, int imax, int jmax,
 		double **F, double **G, double **RS, int **flag) {
 	for (int i = 0; i < imax; i++) {
 		for (int j = 0; j < jmax; j++) {
-			if (flag[i][j] & (1 << 0))
+			if (flag[i][j] & (1 << 0)&flag[i][j+1])
 				RS[i][j] = (1 / dt)	* ((F[i][j] - F[i - 1][j]) / dx	+ (G[i][j] - G[i][j - 1]) / dy);
 		}
 	}
@@ -218,6 +218,7 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 	for (int i = 0; i < imax; ++i) {
 		for (int j = 0; j < jmax; ++j) {
 			/*Temp BCS*/
+			if ((flag[imax - 1][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))){
 			if (B_O(flag[i][j]))
 				temp[i][j] = temp[i + 1][j];
 
@@ -241,6 +242,7 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 
 			if (B_SW(flag[i][j]))
 				temp[i][j] = (temp[i][j - 1] + temp[i - 1][j]) / 2;
+			}
 
 			if (flag[i][j] & (1 << 3))
 				temp[i][j] = temp[i - 1][j];
@@ -307,7 +309,7 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 
 }
 
-	for (int i = 0; i < imax; i++) {
+/*	for (int i = 0; i < imax; i++) {
 		for (int j = 0; j < jmax; j++) {
 
 			if (flag[i][j] & ((1 << 0) | (1 << 3) | (1 << 4))) {
@@ -316,39 +318,5 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 			}
 		}
 	}
-
+*/
 }
-
-
-void nullify_obstacles1(double **U, double **V, double **P, int **flag,
-		int imax, int jmax) {
-
-	for (int i = 0; i < imax ; i++) {
-		for (int j = 0; j < jmax ; j++) {
-			if (flag[i][j] & ((1 << 1) | (1 << 2))) {
-				U[i][j] = 0;
-				V[i][j] = 0;
-				P[i][j] = 0;
-			}
-
-		}
-	}
-
-}
-
-void nullify_obstacles2(double **U, double **V, double **P, double **T,
-		int **flag, int imax, int jmax) {
-	for (int i = 0; i < imax ; i++) {
-		for (int j = 0; j < jmax; j++) {
-			if (flag[i][j] & ((1 << 1) | (1 << 2))) {
-				U[i][j] = 0;
-				V[i][j] = 0;
-				P[i][j] = 0;
-				T[i][j] = 0;
-			}
-		}
-	}
-
-
-}
-

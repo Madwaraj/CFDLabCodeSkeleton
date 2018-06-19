@@ -17,8 +17,7 @@ void sor(
   double **P,
   double **RS,
   double *res,
-  int **flag,
-  double UI
+  int **flag
 );
 
 

@@ -40,7 +40,7 @@ int *precice_set_interface_vertices(int imax, int jmax, double dx, double dy,
 		}
 	}
 	for (int i = 1; i < imax - 1; i++) {
-		if (~(flag[i][jmax + 1] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
+		if (~(flag[i][jmax - 1] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))
 				&& (flag[i][jmax - 1] & 1 << 5)) {   // Top boundary
 			vertices[dimension * coupledcell] = x_origin + (i - 0.5) * dx;
 			vertices[dimension * coupledcell + 1] = y_origin + (jmax * dy);

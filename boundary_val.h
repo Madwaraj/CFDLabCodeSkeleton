@@ -5,7 +5,7 @@
 /**
  * The boundary values of the problem are set.
  */
-void spec_boundary_val(int imax,int jmax,double **U,double **V,int **flag);
+void spec_boundary_val(int imax,int jmax,double **U,double **V,int **flag, double UI);
 
 void boundaryvalues(
   int imax,
