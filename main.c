@@ -151,7 +151,7 @@ int main(int argn, char** args) {
 	int *vertexIDs = precice_set_interface_vertices(imax, jmax, dx, dy,
 			x_origin, y_origin, num_coupling_cells, meshID, flag);
 	//Initialize the U, V and P
-
+	init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
 	int temperatureID = precicec_getDataID(write_data_name, meshID);
 	double* temperatureCoupled = (double*) malloc(
 			sizeof(double) * num_coupling_cells);
@@ -169,7 +169,7 @@ int main(int argn, char** args) {
 	precicec_readBlockScalarData(heatFluxID, num_coupling_cells, vertexIDs,
 			heatflux);
         printf("precice_readscalarblockdata done\n\n");
-	init_uvpt(UI, VI, PI, TI, imax, jmax, U, V, P, T, flag);
+	
 
 	//Make solution folder
 	struct stat st = { 0 };
@@ -224,7 +224,6 @@ int main(int argn, char** args) {
 		}
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, flag);
-		nullify_obstacles2(U, V, P, T, flag, imax, jmax);
 
 		precice_write_temperature(imax, jmax, num_coupling_cells, temperatureCoupled,
 				vertexIDs, temperatureID, T, flag);

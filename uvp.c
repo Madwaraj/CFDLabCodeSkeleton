@@ -215,10 +215,11 @@ void calculate_rs(double dt, double dx, double dy, int imax, int jmax,
 void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 		int imax, int jmax, double dx, double dy, double dt, double alpha,
 		double **U, double **V, int **flag, double TI, int select) {
-	for (int i = 0; i < imax; ++i) {
+if(flag[i][0] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4)){	
+for (int i = 0; i < imax; ++i) {
 		for (int j = 0; j < jmax; ++j) {
 			/*Temp BCS*/
-			if ((flag[imax - 1][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))){
+			if ((flag[i][j] & (0 << 0 | 0 << 1 | 0 << 2 | 0 << 3 | 0 << 4))){
 			if (B_O(flag[i][j]))
 				temp[i][j] = temp[i + 1][j];
 
@@ -251,6 +252,7 @@ void calculate_temp(double **temp, double **temp1, double Pr, double Re,
 				temp[i][j] = TI;
 		}
 	}
+}
 /*
 	switch (select) {
 	case 3:
