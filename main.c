@@ -224,6 +224,7 @@ int main(int argn, char** args) {
 		}
 
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P, flag);
+		nullify_obstacles2(U, V, P, T, flag, imax, jmax);
 
 		precice_write_temperature(imax, jmax, num_coupling_cells, temperatureCoupled,
 				vertexIDs, temperatureID, T, flag);
